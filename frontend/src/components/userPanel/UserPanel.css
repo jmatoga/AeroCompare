@@ -1,0 +1,8 @@
+.main-container {
+    margin: auto;
+    border-radius: 10px;
+    padding: 20px; 
+    display: flex;
+    justify-content: center; /* Wyśrodkowanie w poziomie */
+    align-items: center; /* Wyśrodkowanie w pionie */
+}

@@ -1,0 +1,23 @@
+.navbar-custom {
+    background-color: #007bff; /* Niebieski kolor */
+  }
+  
+  .navbar-custom .nav-link {
+    color: white !important;
+  }
+  
+  .navbar-custom .navbar-brand {
+    font-weight: bold;
+    color: white !important;
+    font-size: 25px;
+  }
+
+  .bi::before {
+    font-size: 2rem; /* Dostosowanie rozmiaru ikony */
+    color: rgb(255, 255, 255); /* Kolor ikony */
+    display: inline-block;
+    content: "";
+    vertical-align: -.125em;
+    background-repeat: no-repeat;
+  }
+  
