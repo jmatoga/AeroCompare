@@ -3,14 +3,14 @@ body{
 }
 
 .App {
-  text-align: center;
+  /* text-align: center; */
   /* background-image: url('resources/2.jpg'); Ścieżka do obrazu */
-  background-image: url('resources/1.webp'); /* Ścieżka do obrazu */
-  background-size: cover; /* Dopasowanie obrazu do rozmiaru kontenera */
-  background-repeat: no-repeat;
+  /* background-image: url('resources/1.webp'); Ścieżka do obrazu */
+  /* background-size: cover; Dopasowanie obrazu do rozmiaru kontenera */
+  /* background-repeat: no-repeat;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  min-height: 100vh; */
 }
 
 .App-logo {
@@ -47,3 +47,4 @@ body{
     transform: rotate(360deg);
   }
 }
+

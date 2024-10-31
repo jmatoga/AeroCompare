@@ -9,6 +9,7 @@ import "./App.css";
 import Footer from "./components/footer/Footer";
 import Navbar from "./components/navBar/NavBar";
 import LoginPanel from "./components/loginPanel/LoginPanel";
+import WelcomePanel from "./components/welcomePanel/WelcomePanel";
 import Cookies from "js-cookie";
 import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
@@ -30,14 +31,12 @@ export default function App() {
         <div className="flex-grow-1">
           <Routes>
             <Route
+              path="/welcome"
+              element={!isLoggedIn ? <WelcomePanel /> : <Navigate to="/" />}
+            />
+            <Route
               path="/login"
-              element={
-                !isLoggedIn ? (
-                  <LoginPanel onLogin={setIsLoggedIn} />
-                ) : (
-                  <Navigate to="/" />
-                )
-              }
+              element={!isLoggedIn ? <LoginPanel /> : <Navigate to="/" />}
             />
             <Route
               path="/register"
@@ -45,7 +44,7 @@ export default function App() {
             />
             <Route
               path="/"
-              element={isLoggedIn ? <MainPanel /> : <Navigate to="/login" />}
+              element={isLoggedIn ? <MainPanel /> : <Navigate to="/welcome" />}
             />
             <Route
               path="/user"
@@ -57,10 +56,10 @@ export default function App() {
                 )
               }
             />
-            <Route path="*" element={<Navigate to="/" />} />
+            <Route path="*" element={<Navigate to="/welcome" />} />
           </Routes>
         </div>
-        <Footer className="footer" />
+        {/* <Footer className="footer" /> */}
       </div>
     </Router>
   );
