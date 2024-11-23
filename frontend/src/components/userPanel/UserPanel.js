@@ -3,9 +3,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { getRequest, putRequest } from "../axios_helper.js";
 import Cookies from "js-cookie";
 import "./UserPanel.css";
-import { Button } from "react-bootstrap";
+import { Button, Container } from "react-bootstrap";
+import backgroundImage from "../../resources/2.jpg";
+import AlertsComponent from "../utils/AlertsComponent.js";
 
-export default function UserPanel({ onLogin }) {
+export default function UserPanel({ onLogin, isAdmin }) {
   let navigate = useNavigate();
   const [userName, setUserName] = useState("");
 
@@ -17,7 +19,6 @@ export default function UserPanel({ onLogin }) {
   });
 
   useEffect(() => {
-    console.log(getRequest("/api/currentUser"));
     const fetchData = async () => {
       try {
         getRequest("api/currentUser").then((response) => {
@@ -41,7 +42,11 @@ export default function UserPanel({ onLogin }) {
     e.preventDefault();
     putRequest("api/userDetails", user)
       .then((res) => {
-        alert("Dane zmienione pomyślnie!");
+        setAlert({
+          visible: true,
+          message: "Data change correctly",
+          severity: "success",
+        });
         navigate("/");
       })
       .catch((error) => {
@@ -57,8 +62,15 @@ export default function UserPanel({ onLogin }) {
       Cookies.remove(cookie);
     }
     onLogin(false);
+    isAdmin(false);
     navigate("/");
   };
+
+  const [alert, setAlert] = useState({
+    visible: false,
+    message: "message",
+    severity: "success",
+  });
 
   return (
     // <div
@@ -66,77 +78,97 @@ export default function UserPanel({ onLogin }) {
     //   style={{ min-height: calc(100vh - 60px); /* 60px footer*/   }}
     // >
     // vh-100
-    <div className="main-container">
-      <div
-        className="card p-4 shadow-sm"
-        style={{ maxWidth: "500px", width: "100%" }}
-      >
-        <h2 className="text-center mb-4">Witaj {`${userName}!`}</h2>
-        <div className="signInForm">
-          <h5 className="mb-3">Twoje dane:</h5>
-          <form className="form-container" onSubmit={handleSubmit}>
-            <div className="mb-3">
-              <input
-                className="form-control"
-                name="name"
-                placeholder="Imie"
-                value={user.name}
-                onChange={handleInputChange}
-                autoFocus
-              />
-            </div>
-            <div className="mb-3">
-              <input
-                className="form-control"
-                name="surname"
-                placeholder="Naziwsko"
-                value={user.surname}
-                onChange={handleInputChange}
-                autoFocus
-              />
-            </div>
-            <div className="mb-3">
-              <input
-                className="form-control"
-                name="email"
-                placeholder="Adres email"
-                value={user.email}
-                onChange={handleInputChange}
-                autoFocus
-              />
-            </div>
-            <div className="mb-3">
-              <input
-                className="form-control"
-                type="password"
-                name="password"
-                placeholder="Hasło"
-                onChange={handleInputChange}
-              />
-            </div>
-            {/* {info && <p className="text-danger">{info}</p>} */}
-            <div className="d-grid gap-2">
-              <Button
-                variant="primary"
-                type="submit"
-                id="SaveChangesButton"
-                name="SaveChangesButton"
-              >
-                Zapisz zmiany
-              </Button>
-              <Button
-                variant="danger"
-                type="button"
-                id="LogoutButton"
-                name="LogoutButton"
-                onClick={handleLogout}
-              >
-                Wyloguj się
-              </Button>
-            </div>
-          </form>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "94vh", // Cała wysokość widoczna w przeglądarce
+        backgroundImage: `url(${backgroundImage})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+    >
+      {alert.visible && (
+        <AlertsComponent
+          message={alert.message}
+          visible={alert.visible}
+          severity={alert.severity}
+          onClose={() => setAlert({ ...alert, visible: false })}
+        />
+      )}
+      <Container className="d-flex justify-content-center mt-4">
+        <div
+          className="card p-4 shadow-sm"
+          style={{ maxWidth: "500px", width: "100%" }}
+        >
+          <h2 className="text-center mb-4">Hello {userName}!</h2>
+          <div className="signInForm">
+            <h5 className="mb-3">Your personal informations:</h5>
+            <form className="form-container" onSubmit={handleSubmit}>
+              <div className="mb-3">
+                <input
+                  className="form-control"
+                  name="email"
+                  placeholder="E-mail"
+                  value={user.email}
+                  onChange={handleInputChange}
+                  autoFocus
+                />
+              </div>
+              <div className="mb-3">
+                <input
+                  className="form-control"
+                  name="name"
+                  placeholder="Name"
+                  value={user.name}
+                  onChange={handleInputChange}
+                  autoFocus
+                />
+              </div>
+              <div className="mb-3">
+                <input
+                  className="form-control"
+                  name="surname"
+                  placeholder="Surname"
+                  value={user.surname}
+                  onChange={handleInputChange}
+                  autoFocus
+                />
+              </div>
+
+              <div className="mb-3">
+                <input
+                  className="form-control"
+                  type="password"
+                  name="password"
+                  placeholder="Password"
+                  onChange={handleInputChange}
+                />
+              </div>
+              {/* {info && <p className="text-danger">{info}</p>} */}
+              <div className="d-grid gap-2">
+                <Button
+                  variant="primary"
+                  type="submit"
+                  id="SaveChangesButton"
+                  name="SaveChangesButton"
+                >
+                  Save changes
+                </Button>
+                <Button
+                  variant="danger"
+                  type="button"
+                  id="LogoutButton"
+                  name="LogoutButton"
+                  onClick={handleLogout}
+                >
+                  Log out
+                </Button>
+              </div>
+            </form>
+          </div>
         </div>
-      </div>
+      </Container>
     </div>
   );
 }

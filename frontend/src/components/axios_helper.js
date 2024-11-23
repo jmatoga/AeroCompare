@@ -1,4 +1,5 @@
 import axios from "axios";
+import Cookies from "js-cookie";
 
 axios.defaults.baseURL = "http://localhost:8090/";
 axios.defaults.headers.post["Content-Type"] = "application/json";
@@ -12,7 +13,10 @@ export const getRequest = async (url) => {
     const response = await axios({
       method: "GET",
       url: url,
-      //credentials: "include",
+      // headers: {
+      //   Authorization: `Bearer ${Cookies.get("accessToken")}`,
+      // },
+      withCredentials: true,
     });
     return response;
   } catch (error) {

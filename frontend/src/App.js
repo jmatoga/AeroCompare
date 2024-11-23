@@ -16,18 +16,21 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import UserPanel from "./components/userPanel/UserPanel";
 import MainPanel from "./components/mainPanel/MainPanel";
 import RegisterPanel from "./components/registerPanel/RegisterPanel";
+import AdminPanel from "./components/adminPanel/AdminPanel";
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(!!Cookies.get("accessToken"));
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     setIsLoggedIn(!!Cookies.get("accessToken"));
+    setIsAdmin(false);
   }, []);
 
   return (
     <Router>
       <div className="App">
-        {isLoggedIn && <Navbar className="header" onLogin={setIsLoggedIn} />}
+        {isLoggedIn && <Navbar className="header" isAdmin={isAdmin} />}
         <div className="flex-grow-1">
           <Routes>
             <Route
@@ -36,7 +39,13 @@ export default function App() {
             />
             <Route
               path="/login"
-              element={!isLoggedIn ? <LoginPanel /> : <Navigate to="/" />}
+              element={
+                !isLoggedIn ? (
+                  <LoginPanel onLogin={setIsLoggedIn} isAdmin={setIsAdmin} />
+                ) : (
+                  <Navigate to="/" />
+                )
+              }
             />
             <Route
               path="/register"
@@ -47,10 +56,20 @@ export default function App() {
               element={isLoggedIn ? <MainPanel /> : <Navigate to="/welcome" />}
             />
             <Route
+              path="/admin"
+              element={
+                isLoggedIn && isAdmin ? (
+                  <AdminPanel />
+                ) : (
+                  <Navigate to="/welcome" />
+                )
+              }
+            />
+            <Route
               path="/user"
               element={
                 isLoggedIn ? (
-                  <UserPanel onLogin={setIsLoggedIn} />
+                  <UserPanel onLogin={setIsLoggedIn} isAdmin={setIsAdmin} />
                 ) : (
                   <Navigate to="/login" />
                 )

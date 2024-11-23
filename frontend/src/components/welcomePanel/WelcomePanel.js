@@ -154,7 +154,9 @@ export default function WelcomePanel() {
                   Get insider tips and travel advice for the best experiences at
                   any destination around the globe.
                 </Card.Text>
-                <Button variant="light">Learn More</Button>
+                <Button variant="light" onClick={() => navigate("/register")}>
+                  Register
+                </Button>
               </Card.Body>
             </Card>
           </Col>

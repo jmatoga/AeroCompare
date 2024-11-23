@@ -5,14 +5,21 @@ import backgroundImage from "../../resources/1.webp";
 import { Container, Row, Col, Button, Card } from "react-bootstrap";
 import Footer from "../footer/Footer";
 import Validation from "./LoginValidation";
+import { getRequest } from "../axios_helper.js";
+import AlertsComponent from "../utils/AlertsComponent.js";
 
-export default function LoginPage({ onLogin }) {
+export default function LoginPanel({ onLogin, isAdmin }) {
   useEffect(() => {
     const servicesSection = document.getElementById("services");
     servicesSection.scrollIntoView({ behavior: "auto" });
   }, []);
 
   let navigate = useNavigate();
+  const [alert, setAlert] = useState({
+    visible: false,
+    message: "message",
+    severity: "success",
+  });
 
   const [values, setValues] = useState({
     email: "",
@@ -35,26 +42,58 @@ export default function LoginPage({ onLogin }) {
       axios
         .post("http://localhost:8090/api/auth/login", values)
         .then(() => {
+          setAlert({
+            visible: true,
+            message: "Logged corretly",
+            severity: "success",
+          });
           onLogin(true);
+          getRequest("api/currentUserRole").then((response) => {
+            if (response.data === "ROLE_ADMIN") {
+              isAdmin(true);
+            } else {
+              isAdmin(false);
+            }
+          });
           navigate("/");
         })
         .catch((error) => {
+          setAlert({
+            visible: true,
+            message: "Invalid email or password. Please try again.",
+            severity: "error",
+          });
           if (error.response) {
             console.log("Server responded with an error:", error.response.data);
             if (error.response.status === 400) {
-              alert("Invalid email or password. Please try again.");
+              setAlert({
+                visible: true,
+                message: "Invalid email or password. Please try again.",
+                severity: "error",
+              });
               sessionStorage.clear();
             } else {
-              alert("An error occurred. Please try again later.");
+              setAlert({
+                visible: true,
+                message: "An error occurred. Please try again later.",
+                severity: "error",
+              });
             }
           } else if (error.request) {
             console.log("No response received:", error.request);
-            alert(
-              "No response received from the server. Please try again later."
-            );
+            setAlert({
+              visible: true,
+              message:
+                "No response received from the server. Please try again later.",
+              severity: "error",
+            });
           } else {
             console.log("Error setting up the request:", error.message);
-            alert("Error setting up the request. Please try again later.");
+            setAlert({
+              visible: true,
+              message: "Error setting up the request. Please try again later.",
+              severity: "error",
+            });
           }
           console.log(error);
         });
@@ -69,6 +108,14 @@ export default function LoginPage({ onLogin }) {
         backgroundPosition: "center",
       }}
     >
+      {alert.visible && (
+        <AlertsComponent
+          message={alert.message}
+          visible={alert.visible}
+          severity={alert.severity}
+          onClose={() => setAlert({ ...alert, visible: false })}
+        />
+      )}
       <Container
         fluid
         className="text-center text-white d-flex flex-column align-items-center justify-content-center"
@@ -90,11 +137,10 @@ export default function LoginPage({ onLogin }) {
           Discover breathtaking destinations, plan unforgettable journeys, and
           let us guide you every step of the way.
         </p>
-        <Button variant="primary" size="lg">
+        <Button variant="primary" size="lg" onClick={() => navigate("/")}>
           Get Started
         </Button>
       </Container>
-
       <Container className="py-2" id="services">
         <Row className="text-center justify-content-center">
           <Col md={6} className="d-flex justify-content-center">
@@ -123,7 +169,6 @@ export default function LoginPage({ onLogin }) {
                       onChange={handleInputChange}
                       className="form-control"
                     />
-
                     <p style={{ color: "red", marginTop: "5px" }}>
                       {errors.email}
                     </p>

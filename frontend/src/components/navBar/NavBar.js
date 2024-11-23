@@ -3,7 +3,7 @@ import { Navbar, Nav, Container } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import "./NavBar.css";
 
-export default function NavBar() {
+export default function NavBar({ isAdmin }) {
   return (
     <Navbar className="navbar-custom" expand="lg">
       <Container>
@@ -14,14 +14,19 @@ export default function NavBar() {
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="mr-auto">
             <Nav.Link as={Link} to="/">
-              Strona Główna
+              Search
             </Nav.Link>
             <Nav.Link as={Link} to="/features">
-              Funkcje
+              Favourites
             </Nav.Link>
             <Nav.Link as={Link} to="/pricing">
-              Cennik
+              History
             </Nav.Link>
+            {isAdmin && (
+              <Nav.Link as={Link} to="/admin">
+                Admin
+              </Nav.Link>
+            )}
           </Nav>
         </Navbar.Collapse>
         <Nav className="ml-auto">

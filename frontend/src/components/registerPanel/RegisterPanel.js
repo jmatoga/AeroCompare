@@ -3,6 +3,11 @@ import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import Validation from "./RegisterValidation";
 import axios from "axios";
+import backgroundImage from "../../resources/1.webp";
+import { Container, Row, Col, Button, Card } from "react-bootstrap";
+import Footer from "../footer/Footer";
+import { getRequest } from "../axios_helper.js";
+import AlertsComponent from "../utils/AlertsComponent.js";
 
 export default function RegisterPanel() {
   let navigate = useNavigate();
@@ -37,7 +42,7 @@ export default function RegisterPanel() {
         .then((response) => {
           //Cookies.set("accessToken", response.data.token);
           //onRegister(true);
-          navigate("/");
+          navigate("/login");
         })
         .catch((error) => {
           if (error.response) {
@@ -63,71 +68,122 @@ export default function RegisterPanel() {
   };
 
   return (
-    <div className="d-flex justify-content-center align-items-center bg-primary vh-100">
-      <div className="bg-white p-3 rounded w-25 text-center">
-        <h1 className="mb-4">
-          Welcome to Aero Compare<br></br>
-          <br></br>
+    <div
+      style={{
+        backgroundImage: `url(${backgroundImage})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+    >
+      {alert && <AlertsComponent />}
+      <Container
+        fluid
+        className="text-center text-white d-flex flex-column align-items-center justify-content-center"
+        style={{ minHeight: "75vh", height: "100%", paddingTop: "11rem" }}
+      >
+        <h1
+          className="display-4 mb-3"
+          style={{
+            fontWeight: "bold",
+            textShadow: "2px 2px 5px rgba(0,0,0,0.5)",
+          }}
+        >
+          Welcome to Your Next Adventure
         </h1>
-        <form action="" onSubmit={handleSubmit}>
-          <div className="mb-3">
-            <h3 className="text-center">
-              Create your account<br></br>
-              <br></br>
-            </h3>
-            <label htmlFor="email">
-              <b>Email</b>
-            </label>
-            <input
-              name="email"
-              type="email"
-              placeholder="Enter E-mail"
-              onChange={handleInputChange}
-              className="form-control"
-            />
-            {errors.email && (
-              <p style={{ color: "red", marginTop: "5px" }}>{errors.email}</p>
-            )}
-          </div>
-          <div className="mb-3">
-            <label htmlFor="password">
-              <b>Password</b>
-            </label>
-            <input
-              name="password"
-              type="password"
-              placeholder="Enter Password"
-              onChange={handleInputChange}
-              className="form-control"
-            />
-            {errors.password && (
-              <p style={{ color: "red", marginTop: "5px" }}>
-                {errors.password}
-              </p>
-            )}
-          </div>
-          <div className="mb-3">
-            <label htmlFor="confirmPassword">
-              <b>Confirm Password</b>
-            </label>
-            <input
-              name="confirmPassword"
-              type="password"
-              placeholder="Confirm Password"
-              onChange={handleInputChange}
-              className="form-control"
-            />
-            {errors.confirmPassword && (
-              <p style={{ color: "red", marginTop: "5px" }}>
-                {errors.confirmPassword}
-              </p>
-            )}
-          </div>
-          <button type="submit" className="btn btn-success w-100">
-            Register
-          </button>
-        </form>
-      </div>
+        <p
+          className="lead mb-4"
+          style={{ textShadow: "1px 1px 3px rgba(0,0,0,0.5)" }}
+        >
+          Discover breathtaking destinations, plan unforgettable journeys, and
+          let us guide you every step of the way.
+        </p>
+        <Button variant="primary" size="lg" onClick={() => navigate("/")}>
+          Get Started
+        </Button>
+      </Container>
+      <Container className="py-2" id="services">
+        <Row className="text-center justify-content-center">
+          <Col md={6} className="d-flex justify-content-center">
+            <Card
+              className="mb-4 shadow-sm mt-2"
+              style={{
+                width: "32.2rem",
+                height: "25.4rem",
+                transform: "translateY(-8.1rem)",
+                background: "linear-gradient(135deg, #0a4d8a, #5ca2d8)",
+                color: "white",
+              }}
+            >
+              <Card.Body>
+                <form action="" onSubmit={handleSubmit}>
+                  <div className="mb-3">
+                    <h1 className="text-center">Register your account</h1>
+                    <br />
+                    <label htmlFor="email">
+                      <b>Email</b>
+                    </label>
+                    <input
+                      name="email"
+                      type="email"
+                      placeholder="Enter E-mail"
+                      onChange={handleInputChange}
+                      className="form-control"
+                    />
+
+                    <p style={{ color: "red", marginTop: "5px" }}>
+                      {errors.email}
+                    </p>
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="password">
+                      <b>Password</b>
+                    </label>
+                    <input
+                      name="password"
+                      type="password"
+                      placeholder="Enter Password"
+                      onChange={handleInputChange}
+                      className="form-control"
+                    />
+                    <p
+                      style={{
+                        color: "red",
+                        paddingTop: "5px",
+                      }}
+                    >
+                      {errors.password}
+                    </p>
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="password">
+                      <b>Confirm Password</b>
+                    </label>
+                    <input
+                      name="confirmPassword"
+                      type="confirmPassword"
+                      placeholder="Confirm Password"
+                      onChange={handleInputChange}
+                      className="form-control"
+                    />
+                    <p
+                      style={{
+                        color: "red",
+                        paddingTop: "5px",
+                      }}
+                    >
+                      {errors.password}
+                    </p>
+                  </div>
+                  <button type="submit" className="btn btn-success w-100 py-2">
+                    Register
+                  </button>
+                </form>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
+      <Footer className="footer" />
     </div>
   );
 }
