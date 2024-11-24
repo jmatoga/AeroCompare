@@ -1,29 +1,28 @@
 package jm.aerocompare.service;
 
 import jakarta.transaction.Transactional;
+import jm.aerocompare.configuration.PropertiesConfig;
+import jm.aerocompare.model.User;
+import jm.aerocompare.repository.UserRepository;
+import jm.aerocompare.security.jwt.JwtUtils;
 import jm.aerocompare.security.payload.request.AuthenticationRequest;
 import jm.aerocompare.security.payload.response.AuthenticationResponse;
+import jm.aerocompare.security.service.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.http.*;
+import org.springframework.http.HttpCookie;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import jm.aerocompare.configuration.PropertiesConfig;
-//import jm.aerocompare.model.RefreshToken;
-import jm.aerocompare.model.User;
-import jm.aerocompare.repository.UserRepository;
-import jm.aerocompare.security.jwt.JwtUtils;
-//import jm.aerocompare.security.payload.request.LoginRequest;
-//import jm.aerocompare.security.payload.response.JwtResponse;
-import jm.aerocompare.security.service.UserDetailsImpl;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
-import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 @RequiredArgsConstructor
@@ -37,26 +36,34 @@ public class AuthenticationServiceImpl {
     private final PasswordEncoder encoder;
 
     public AuthenticationResponse authenticateUser(AuthenticationRequest loginRequest) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = jwtUtils.generateJwtToken((UserDetailsImpl) authentication.getPrincipal());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String jwt = jwtUtils.generateJwtToken((UserDetailsImpl) authentication.getPrincipal());
 
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+            UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
-        String role = userDetails.getAuthorities().stream().findFirst().get().getAuthority();
+            AtomicReference<String> role = new AtomicReference<>();
+            userDetails.getAuthorities().stream()
+                    .findFirst()
+                    .ifPresent((authority) -> role.set(authority.getAuthority()));
 
-        return new AuthenticationResponse(jwt,
-                userDetails.getId(),
-                userDetails.getEmail(),
-                role);
-
+            return new AuthenticationResponse(jwt,
+                    userDetails.getId(),
+                    userDetails.getEmail(),
+                    role.get());
 
 //        List<String> roles = userDetails.getAuthorities().stream()
 //                                     .map(item -> item.getAuthority())
 //                                     .toList();
-
+        } catch (BadCredentialsException e) {
+            System.out.println("Invalid credentials: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Authentication failed: " + e.getMessage());
+        }
+        return null;
     }
 
     public HttpHeaders createHeaders(AuthenticationResponse jwtResponse) {

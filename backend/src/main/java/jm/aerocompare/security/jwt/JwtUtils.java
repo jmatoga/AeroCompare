@@ -1,23 +1,20 @@
 package jm.aerocompare.security.jwt;
 
-import java.text.ParseException;
-import java.util.Date;
-
 import com.nimbusds.jwt.JWT;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.JWTParser;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import jm.aerocompare.security.service.UserDetailsImpl;
 import lombok.extern.java.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-
-import jm.aerocompare.security.service.UserDetailsImpl;
-
 import javax.crypto.SecretKey;
+import java.text.ParseException;
+import java.util.Date;
 
 @Component
 @Log

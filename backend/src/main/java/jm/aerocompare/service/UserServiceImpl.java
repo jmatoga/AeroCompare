@@ -1,19 +1,18 @@
 package jm.aerocompare.service;
 
 import jakarta.transaction.Transactional;
-//import jm.aerocompare.dto.UserDetailsDTO;
 import jm.aerocompare.dto.UserDetailsDTO;
+import jm.aerocompare.exception.CurrentUserNotAuthenticatedException;
+import jm.aerocompare.exception.EmailAlreadyTakenException;
 import jm.aerocompare.model.ERole;
 import jm.aerocompare.model.User;
-//import jm.aerocompare.validation.UserRoleValidator;
+import jm.aerocompare.repository.UserRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import jm.aerocompare.exception.*;
-import jm.aerocompare.repository.*;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
@@ -21,7 +20,7 @@ import java.util.UUID;
 @Service
 @AllArgsConstructor
 public class UserServiceImpl implements UserService {
-//    private final UserRoleValidator userRoleValidator;
+    //    private final UserRoleValidator userRoleValidator;
     private UserRepository userRepository;
     private PasswordEncoder encoder;
 
@@ -60,21 +59,21 @@ public class UserServiceImpl implements UserService {
     @Override
     public void updateUserDetails(UserDetailsDTO userDTO) throws CurrentUserNotAuthenticatedException {
         User user = getCurrentUser();
-        if(userDTO.getName() != null && !userDTO.getName().isEmpty())
+        if (userDTO.getName() != null && !userDTO.getName().isEmpty())
             user.setName(userDTO.getName());
-        if(userDTO.getSurname() != null && !userDTO.getSurname().isEmpty())
+        if (userDTO.getSurname() != null && !userDTO.getSurname().isEmpty())
             user.setSurname(userDTO.getSurname());
-        if(userDTO.getEmail() != null && !userDTO.getEmail().isEmpty())
+        if (userDTO.getEmail() != null && !userDTO.getEmail().isEmpty())
             user.setEmail(userDTO.getEmail());
-        if(userDTO.getPassword() != null && !userDTO.getPassword().isEmpty())
+        if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty())
             user.setPassword(encoder.encode(userDTO.getPassword()));
         userRepository.save(user);
     }
-//
-//    @Override
-//    public boolean isModeratorOrAdmin(String userId) {
-//        User user = getUserById(userId);
-//        return userRoleValidator.isModeratorOrAdmin(user);
-//    }
+
+    @Override
+    public ERole getRole(UUID userId) {
+        User user = getUserById(userId);
+        return user.getRole();
+    }
 
 }

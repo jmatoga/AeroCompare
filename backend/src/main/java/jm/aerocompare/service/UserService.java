@@ -1,8 +1,10 @@
 package jm.aerocompare.service;
 
 //import jm.aerocompare.dto.UserDetailsDTO;
+
 import jm.aerocompare.dto.UserDetailsDTO;
 import jm.aerocompare.exception.CurrentUserNotAuthenticatedException;
+import jm.aerocompare.model.ERole;
 import jm.aerocompare.model.User;
 
 import java.util.List;
@@ -19,6 +21,6 @@ public interface UserService {
     User getUserById(UUID id);
 
     void updateUserDetails(UserDetailsDTO userDTO) throws CurrentUserNotAuthenticatedException;
-//
-//    boolean isModeratorOrAdmin(String userId);
+
+    ERole getRole(UUID userId);
 }

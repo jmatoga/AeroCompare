@@ -9,10 +9,8 @@ import jm.aerocompare.configuration.PropertiesConfig;
 import jm.aerocompare.exception.CurrentUserNotAuthenticatedException;
 import jm.aerocompare.security.service.UserDetailsServiceImpl;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,51 +19,25 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 
 @Log
 @Component
-@RequiredArgsConstructor
 public class AuthTokenFilter extends OncePerRequestFilter {
-
     private final JwtUtils jwtUtils;
     private final UserDetailsServiceImpl userDetailsService;
     private final PropertiesConfig propertiesConfig;
-    private static final Logger logger = LoggerFactory.getLogger(AuthTokenFilter.class);
+    private final String[] allowedPaths;
 
-//    @Override
-//    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
-//        try {
-//            String jwt = parseJwt(request);
-//            if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
-//                String username = jwtUtils.getUserNameFromJwtToken(jwt);
-//
-//                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-//                UsernamePasswordAuthenticationToken authentication =
-//                        new UsernamePasswordAuthenticationToken(
-//                                userDetails,
-//                                null,
-//                                userDetails.getAuthorities());
-//                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-//
-//                SecurityContextHolder.getContext().setAuthentication(authentication);
-//            }
-//        } catch (Exception e) {
-//            logger.error("Cannot set user authentication!", e);
-//        }
-//
-//        filterChain.doFilter(request, response);
-//    }
-//
-//    private String parseJwt(HttpServletRequest request) {
-//        String headerAuth = request.getHeader("Authorization");
-//
-//        if (StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {
-//            return headerAuth.substring(7);
-//        }
-//
-//        return null;
-//    }
+    public AuthTokenFilter(JwtUtils jwtUtils, UserDetailsServiceImpl userDetailsService, PropertiesConfig propertiesConfig, @Qualifier("allowedPaths") String[] allowedPaths) {
+        this.jwtUtils = jwtUtils;
+        this.userDetailsService = userDetailsService;
+        this.propertiesConfig = propertiesConfig;
+        this.allowedPaths = allowedPaths;
+    }
+
     private String getJwtFromAccessCookieOrBearerToken(HttpServletRequest request) throws CurrentUserNotAuthenticatedException {
         String authHeader = request.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer "))
@@ -82,13 +54,17 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         throw new CurrentUserNotAuthenticatedException();
     }
 
-
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
+        if (List.of(allowedPaths).contains(request.getRequestURI())) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         try {
             String jwtAccessFromCookie = getJwtFromAccessCookieOrBearerToken(request);
 
-            if (jwtAccessFromCookie != null  && jwtUtils.validateJwtToken(jwtAccessFromCookie)) {
+            if (jwtAccessFromCookie != null && jwtUtils.validateJwtToken(jwtAccessFromCookie)) {
                 String email = jwtUtils.getUserNameFromJwtToken(jwtAccessFromCookie);
 
                 UserDetails userDetails = userDetailsService.loadUserByUsername(email);
@@ -99,7 +75,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         } catch (Exception e) {
-            log.info("Cannot set user authentication! Error:\n" + e);
+            log.info("Cannot set user authentication! Error:\n" + Arrays.toString(e.getStackTrace()));
         }
         filterChain.doFilter(request, response);
     }

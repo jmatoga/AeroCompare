@@ -1,10 +1,10 @@
 package jm.aerocompare.controller;
 
 import jm.aerocompare.dto.UserDTO;
-//import jm.aerocompare.dto.UserDetailsDTO;
 import jm.aerocompare.dto.UserDetailsDTO;
 import jm.aerocompare.exception.CurrentUserNotAuthenticatedException;
 import jm.aerocompare.mapper.UserMapper;
+import jm.aerocompare.model.ERole;
 import jm.aerocompare.model.User;
 import jm.aerocompare.security.payload.response.MessageResponse;
 import jm.aerocompare.service.UserService;
@@ -30,7 +30,7 @@ public class UserController {
     }
 
     @GetMapping("/currentUser")
-    @PreAuthorize("hasRole('ROLE_USER')" + "or hasRole('ROLE_MODERATOR')" + "or hasRole('ROLE_ADMIN')" )
+    @PreAuthorize("hasRole('ROLE_USER')" + "or hasRole('ROLE_MODERATOR')" + "or hasRole('ROLE_ADMIN')")
     ResponseEntity<UserDTO> getCurrentUser() throws CurrentUserNotAuthenticatedException {
         User currentUser = userService.getCurrentUser();
         UserDTO dto = userMapper.mapToUserDTO(userService.getUserById(currentUser.getId()));
@@ -38,14 +38,14 @@ public class UserController {
     }
 
     @PutMapping("/userDetails")
-    @PreAuthorize("hasRole('ROLE_USER')" + "or hasRole('ROLE_MODERATOR')" + "or hasRole('ROLE_ADMIN')" )
+    @PreAuthorize("hasRole('ROLE_USER')" + "or hasRole('ROLE_MODERATOR')" + "or hasRole('ROLE_ADMIN')")
     ResponseEntity<MessageResponse> updateUserDetails(@RequestBody UserDetailsDTO userDTO) throws CurrentUserNotAuthenticatedException {
         userService.updateUserDetails(userDTO);
         return ResponseEntity.ok(new MessageResponse("User details updated successfully!"));
     }
-//
-//    @GetMapping("/userRoles")
-//    ResponseEntity<Boolean> getUserRoles() throws CurrentUserNotAuthenticatedException {
-//        return ResponseEntity.ok(userService.isModeratorOrAdmin(userService.getCurrentUser().getId()));
-//    }
+
+    @GetMapping("/currentUserRole")
+    ResponseEntity<ERole> isAdmin() throws CurrentUserNotAuthenticatedException {
+        return ResponseEntity.ok(userService.getRole(userService.getCurrentUser().getId()));
+    }
 }
