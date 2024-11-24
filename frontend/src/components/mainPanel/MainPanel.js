@@ -10,7 +10,7 @@ import {
   InputGroup,
 } from "react-bootstrap";
 // import Select from "react-select";
-import { getRequest } from "../axios_helper";
+import { getRequest, getRequestWithParams } from "../axios_helper";
 import PassengersModal from "./PassengersModal";
 import MultiChoice from "./MultiChoice";
 import { BsFillPeopleFill, BsFillLuggageFill } from "react-icons/bs";
@@ -47,21 +47,121 @@ import TripCard from "./TripCard.js";
 import Pagination from "@mui/material/Pagination";
 
 export default function MainPanel() {
+  {
+    /* Trip Type, Stops, Modal */
+  }
+  const [tripType, setTripType] = useState("one-way");
+  const [stops, setStops] = useState("Any");
+  const [showModal, setShowModal] = useState(false);
+
+  {
+    /* Passengers */
+  }
+  const [passengersCount, setPassengersCount] = useState(0);
+  const [childrensCount, setChildrensCount] = useState(0);
+  const [infantsCount, setInfantsCount] = useState(0);
+
+  {
+    /* Baggage */
+  }
+  const [handLuggageCount, setHandLuggageCount] = useState(0);
+  const [baggageCount, setBaggageCount] = useState(0);
+
+  {
+    /* Airports */
+  }
   const [departureAirport, setDepartureAirportData] = useState([]);
   const [arrivalAirport, setArrivalAirportData] = useState([]);
 
   const [departureAirportList, setDepartureAirportList] = useState([]);
   const [arrivalAirportList, setArrivalAirportList] = useState([]);
 
+  {
+    /* Date */
+  }
+  const [selectedDepartureDate, setSelectedDepartureDate] = useState(null);
+  const [selectedReturnDate, setSelectedReturnDate] = useState(null);
+
+  {
+    /* Airlines */
+  }
   const [airlines, setAirlines] = useState([]);
   const [airlinesList, setAirlinesList] = useState([]);
 
+  {
+    /* Classes */
+  }
   const [classes, setClasses] = useState([]);
   const [classesList, setClassesList] = useState([]);
 
+  {
+    /* Price */
+  }
+  const [priceValue, setPriceValue] = useState([0, 15000]);
+
+  {
+    /* Time */
+  }
+  const [departureOrReturnValue, setDepartureOrReturnValue] = useState("1");
+
+  const [hourDepartureValue, setHourDepartureValue] = useState([0, 24]);
+  const [hourArrivalValue, setHourArrivalValue] = useState([0, 24]);
+
+  const [hourDepartureReturnValue, setHourDepartureReturnValue] = useState([
+    0, 24,
+  ]);
+  const [hourArrivalReturnValue, setHourArrivalReturnValue] = useState([0, 24]);
+
+  {
+    /* Departure Days */
+  }
+  const [selectedDays, setSelectedDays] = useState([
+    "Mon",
+    "Tue",
+    "Wed",
+    "Thu",
+    "Fri",
+    "Sat",
+    "Sun",
+  ]);
+
+  const [selectedReturnDays, setSelectedReturnDays] = useState([
+    "Mon",
+    "Tue",
+    "Wed",
+    "Thu",
+    "Fri",
+    "Sat",
+    "Sun",
+  ]);
+
+  {
+    /* Trip Time */
+  }
+  const [tripTimeValue, setTripTimeValue] = useState(60);
+  const [tripTimeReturnValue, setTripTimeReturnValue] = useState(60);
+
+  {
+    /* Flights */
+  }
+  const [flights, setFlights] = useState([]);
+
+  {
+    /* Pagination */
+  }
+  const [currentPage, setCurrentPage] = useState(1); // MUI Pagination zaczyna od 1
+  const [totalPages, setTotalPages] = useState(1);
+
+  {
+    /* useEffects */
+  }
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    handleFilters(currentPage);
+  }, [currentPage]);
 
   const fetchData = async () => {
     try {
@@ -100,99 +200,24 @@ export default function MainPanel() {
     }
   };
 
-  // Stan dla filtrów, porównań i paginacji
-  const [filters, setFilters] = useState({
-    destination: "",
-    airline: "",
-    maxPrice: 1000,
-  });
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 3; // Ustal liczbę elementów na stronę
+  const handleFilters = async (page) => {
+    const [flightsResponse] = await Promise.all([
+      getRequestWithParams("api/getAllFlights", {
+        params: {
+          page: page - 1, // Spring używa indeksu od 0
+          size: 5, // Liczba elementów na stronę
+        },
+      }),
+    ]);
 
-  // Przykładowe dane biletów
-  const sampleTickets = [
-    { destination: "New York", airline: "Delta", price: 450 },
-    { destination: "Paris", airline: "Air France", price: 750 },
-    { destination: "Tokyo", airline: "ANA", price: 1200 },
-    { destination: "London", airline: "British Airways", price: 650 },
-    { destination: "Berlin", airline: "Lufthansa", price: 550 },
-    { destination: "Sydney", airline: "Qantas", price: 1300 },
-  ];
-
-  // Funkcja filtrowania biletów na podstawie wyboru użytkownika
-  const filteredTickets = sampleTickets.filter(
-    (ticket) =>
-      (!filters.destination ||
-        ticket.destination
-          .toLowerCase()
-          .includes(filters.destination.toLowerCase())) &&
-      (!filters.airline ||
-        ticket.airline.toLowerCase().includes(filters.airline.toLowerCase())) &&
-      ticket.price <= filters.maxPrice
-  );
-
-  // Obliczanie paginacji
-  const displayedTickets = filteredTickets.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-  const totalPages = Math.ceil(filteredTickets.length / itemsPerPage);
-
-  // Funkcja obsługi zmiany filtrów
-  const handleFilterChange = (event) => {
-    const { name, value } = event.target;
-    setFilters((prevFilters) => ({
-      ...prevFilters,
-      [name]: name === "maxPrice" ? Number(value) : value,
-    }));
+    // Zaktualizowanie danych dla airportów
+    setFlights(flightsResponse.data.content);
+    setTotalPages(flightsResponse.data.totalPages);
   };
 
-  const [tripType, setTripType] = useState("oneWay");
-  const [selectedOption, setSelectedOption] = useState("one-way");
-
-  const handleSelect = (option) => {
-    setSelectedOption(option);
+  const handleTripType = (option) => {
+    setTripType(option);
   };
-
-  const [showModal, setShowModal] = useState(false);
-  const [passengersCount, setPassengersCount] = useState(0);
-  const [childrensCount, setChildrensCount] = useState(0);
-  const [infantsCount, setInfantsCount] = useState(0);
-
-  const [handLuggageCount, setHandLuggageCount] = useState(0);
-  const [baggageCount, setBaggageCount] = useState(0);
-
-  const [selectedDepartureDate, setSelectedDepartureDate] = useState(null);
-  const [selectedReturnDate, setSelectedReturnDate] = useState(null);
-
-  const [hourDepartureValue, setHourDepartureValue] = useState([0, 24]);
-  const [hourArrivalValue, setHourArrivalValue] = useState([0, 24]);
-
-  const [hourDepartureReturnValue, setHourDepartureReturnValue] = useState([
-    0, 24,
-  ]);
-  const [hourArrivalReturnValue, setHourArrivalReturnValue] = useState([0, 24]);
-
-  const [selectedDays, setSelectedDays] = useState([
-    "Mon",
-    "Tue",
-    "Wed",
-    "Thu",
-    "Fri",
-    "Sat",
-    "Sun",
-  ]);
-  const [selectedReturnDays, setSelectedReturnDays] = useState([
-    "Mon",
-    "Tue",
-    "Wed",
-    "Thu",
-    "Fri",
-    "Sat",
-    "Sun",
-  ]);
-
-  const [priceValue, setPriceValue] = useState([0, 15000]);
 
   const handleChangeSelectedReturnDays = (day, event) => {
     setSelectedReturnDays((prevSelectedDays) => {
@@ -213,15 +238,18 @@ export default function MainPanel() {
       }
     });
   };
-  const [departureOrReturnValue, setDepartureOrReturnValue] = useState("1");
 
-  const [tripTimeValue, setTripTimeValue] = useState(60);
-  const [tripTimeReturnValue, setTripTimeReturnValue] = useState(60);
-
-  const handleChange = (event, newValue) => {
+  const handleDepartureOrReturn = (event, newValue) => {
     setDepartureOrReturnValue(newValue);
   };
 
+  const handlePageChange = (event, value) => {
+    setCurrentPage(value);
+  };
+
+  {
+    /* Renders */
+  }
   const RenderTimeSlider = (tripTimeValue, setTripTimeValue) => (
     <>
       {/* Trip Time */}
@@ -289,8 +317,6 @@ export default function MainPanel() {
     </>
   );
 
-  const [stops, setStops] = useState("Any");
-
   return (
     <div
       style={{
@@ -337,28 +363,24 @@ export default function MainPanel() {
                         <ButtonGroup>
                           <Button
                             variant={
-                              selectedOption === "one-way"
-                                ? "primary"
-                                : "secondary"
+                              tripType === "one-way" ? "primary" : "secondary"
                             }
-                            onClick={() => handleSelect("one-way")}
+                            onClick={() => handleTripType("one-way")}
                           >
                             One-way
                           </Button>
                           <Button
                             variant={
-                              selectedOption === "return"
-                                ? "primary"
-                                : "secondary"
+                              tripType === "return" ? "primary" : "secondary"
                             }
-                            onClick={() => handleSelect("return")}
+                            onClick={() => handleTripType("return")}
                           >
                             With return
                           </Button>
                         </ButtonGroup>
                         <Button
                           variant="primary"
-                          onClick={() => setCurrentPage(1)}
+                          onClick={() => handleFilters(currentPage)}
                         >
                           Zastosuj filtry
                         </Button>
@@ -442,7 +464,7 @@ export default function MainPanel() {
                   />
 
                   {/* Arrival Airport */}
-                  {selectedOption === "return" && (
+                  {tripType === "return" && (
                     <AirportSelect
                       label="Arrival"
                       airport={arrivalAirport}
@@ -464,7 +486,7 @@ export default function MainPanel() {
                   />
 
                   {/* Return Date */}
-                  {selectedOption === "return" && (
+                  {tripType === "return" && (
                     <DatePicker
                       label="Return Date"
                       // className={
@@ -537,7 +559,7 @@ export default function MainPanel() {
 
                   <Form.Group>
                     <div className="row">
-                      {selectedOption === "return" ? (
+                      {tripType === "return" ? (
                         <Box
                           sx={{
                             width: "100%",
@@ -549,7 +571,7 @@ export default function MainPanel() {
                             <Box
                               sx={{ borderBottom: 1, borderColor: "divider" }}
                             >
-                              <TabList onChange={handleChange}>
+                              <TabList onChange={handleDepartureOrReturn}>
                                 <Tab label="Departure" value="1" />
                                 <Tab label="Return" value="2" />
                               </TabList>
@@ -648,12 +670,17 @@ export default function MainPanel() {
                   gap: "10px", // Daje odstęp pomiędzy elementami
                 }}
               >
-                <TripCard />
-                <TripCard />
-                <TripCard />
-                <TripCard />
-                <TripCard />
-                <TripCard />
+                {flights.map((flight) => (
+                  <TripCard
+                    key={flight.id}
+                    flight={flight}
+                    adults={passengersCount}
+                    childrens={childrensCount}
+                    infants={infantsCount}
+                    handLuggage={handLuggageCount}
+                    baggage={baggageCount}
+                  />
+                ))}
               </CardContent>
             </Card>
           </ListGroup>
@@ -671,19 +698,19 @@ export default function MainPanel() {
           {/* </ListGroup> */}
 
           {/* Komponent paginacji */}
-          {totalPages > 1 && (
-            <Pagination
-              count={10}
-              color="primary"
-              showFirstButton
-              showLastButton
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            />
-          )}
+          <Pagination
+            count={totalPages} // Liczba stron
+            page={currentPage} // Aktualna strona
+            color="primary"
+            showFirstButton
+            showLastButton
+            onChange={handlePageChange} // Obsługa zmiany strony
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          />
         </div>
       </Container>
       <Footer className="footer" />

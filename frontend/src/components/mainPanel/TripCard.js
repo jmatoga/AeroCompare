@@ -3,32 +3,56 @@ import CardContent from "@mui/material/CardContent";
 import CardActionArea from "@mui/material/CardActionArea";
 import RemoveIcon from "@mui/icons-material/Remove";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
-import { Button, Chip, Typography } from "@mui/material";
+import { Button, Chip, Tooltip, Typography } from "@mui/material";
 import { Flight } from "@mui/icons-material";
 import FlightDetailsModal from "./FilghtDetailModal";
-import { useState } from "react";
+import React, { useState } from "react";
+import { format } from "date-fns";
+import { tooltipClasses } from "@mui/material/Tooltip";
+import { styled } from "@mui/material/styles";
 
-export default function TripCard() {
-  const [showModal, setShowModal] = useState(false);
-  const flightDetails = {
-    departureCity: "Warsaw",
-    departureAirport: "WAW",
-    arrivalCity: "London",
-    arrivalAirport: "LHR",
-    date: "2024-12-15",
-    time: "14:30",
-    ticketNumber: "1234567890",
-    passengers: [
-      { name: "John Doe", type: "Adult", seat: "12A" },
-      { name: "Jane Doe", type: "Child", seat: "12B" },
-    ],
+export default function TripCard({
+  key,
+  flight,
+  adults,
+  childrens,
+  infants,
+  handLuggage,
+  baggage,
+}) {
+  const passengersCount = adults + childrens + infants;
+
+  const airportTooltipTitle = ({ airport }) => {
+    return (
+      <React.Fragment>
+        <Typography color="inherit">
+          {airport.iata_code} - {airport.country}, <b>{airport.city}</b>
+          <br />({airport.name})
+        </Typography>
+      </React.Fragment>
+    );
   };
+
+  const HtmlTooltip = styled(({ className, ...props }) => (
+    <Tooltip {...props} classes={{ popper: className }} />
+  ))(({ theme }) => ({
+    [`& .${tooltipClasses.tooltip}`]: {
+      backgroundColor: "#f5f5f9",
+      color: "rgba(0, 0, 0, 0.87)",
+      // maxWidth: 220,
+      fontSize: theme.typography.pxToRem(12),
+      border: "1px solid #dadde9",
+    },
+  }));
+
+  const [showModal, setShowModal] = useState(false);
+
   return (
     <div style={{ display: "flex", alignItems: "flex-start" }}>
       <FlightDetailsModal
         show={showModal}
         onHide={() => setShowModal(false)}
-        flightDetails={flightDetails}
+        flightDetails={flight}
       />
       {/* Main Trip Card */}
       <Card
@@ -64,15 +88,17 @@ export default function TripCard() {
                     component="div"
                     sx={{ position: "absolute", top: 10 }}
                   >
-                    Thu 13.03.2025
+                    {format(new Date(flight.departureTime), "EEE dd.MM.yyyy")}
                   </Typography>
                   <Chip
                     variant="outlined"
-                    label="WizzAir"
+                    label={
+                      flight.airline !== null ? flight.airline.name : "NULL"
+                    }
                     sx={{
                       position: "relative",
                       top: 12,
-                      fontSize: 42,
+                      fontSize: 29,
                       borderWidth: 3,
                       height: 50,
                     }}
@@ -90,19 +116,31 @@ export default function TripCard() {
                           component="div"
                           sx={{ position: "relative", top: -10 }}
                         >
-                          12:00
+                          {new Date(flight.departureTime).toLocaleTimeString(
+                            [],
+                            { hour: "2-digit", minute: "2-digit" }
+                          )}
                         </Typography>
                       </div>
                     </div>
 
                     <div className="col-md-2 mt-2">
                       <div className="col mt-3 text-center">
-                        <Typography
-                          variant="h6"
-                          sx={{ position: "absolute", top: 40 }}
+                        <HtmlTooltip
+                          title={airportTooltipTitle({
+                            airport: flight.departureAirport,
+                          })}
+                          disableFocusListener
+                          arrow
+                          sx={{ fontSize: 20 }}
                         >
-                          KRK
-                        </Typography>
+                          <Typography
+                            variant="h6"
+                            sx={{ position: "absolute", top: 40 }}
+                          >
+                            {flight.departureAirport.iata_code}
+                          </Typography>
+                        </HtmlTooltip>
                         <RemoveIcon
                           sx={{
                             fontSize: 20,
@@ -125,7 +163,7 @@ export default function TripCard() {
                             fontWeight: "bold",
                           }}
                         >
-                          1h 30m
+                          {flight.duration}
                         </Typography>
                         <Chip
                           variant="outlined"
@@ -141,12 +179,20 @@ export default function TripCard() {
 
                     <div className="col-md-2 mt-2">
                       <div className="col mt-3 text-center">
-                        <Typography
-                          variant="h6"
-                          sx={{ position: "absolute", top: 40, right: 195 }}
+                        <HtmlTooltip
+                          title={airportTooltipTitle({
+                            airport: flight.arrivalAirport,
+                          })}
+                          disableFocusListener
+                          arrow
                         >
-                          WAW
-                        </Typography>
+                          <Typography
+                            variant="h6"
+                            sx={{ position: "absolute", top: 40, right: 195 }}
+                          >
+                            {flight.arrivalAirport.iata_code}
+                          </Typography>
+                        </HtmlTooltip>
                         <RemoveIcon
                           sx={{
                             fontSize: 20,
@@ -166,7 +212,10 @@ export default function TripCard() {
                           component="div"
                           sx={{ position: "relative", top: -10 }}
                         >
-                          12:00
+                          {new Date(flight.arrivalTime).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
                         </Typography>
                       </div>
                     </div>
@@ -205,10 +254,14 @@ export default function TripCard() {
         }}
       >
         <Typography variant="h4" align="center">
-          200 PLN
+          {adults * flight.priceForAdult +
+            childrens * flight.priceForChild +
+            handLuggage * flight.priceForHandLuggage +
+            baggage * flight.priceForCheckedLuggage}{" "}
+          PLN
         </Typography>
         <Typography variant="body2" align="center">
-          for 3 passengers
+          for {passengersCount} passenger{passengersCount > 1 ? "s" : ""}
         </Typography>
         {/* <Typography variant="body2" align="center">
           and 2 hand Luggage and 1 checked baggage
@@ -223,7 +276,9 @@ export default function TripCard() {
           </div>
           <div className="col-md-3 mt-2">
             <div className="col text-center">
-              <FavoriteBorderIcon sx={{ marginTop: "5px" }} />
+              <Tooltip title="Add to favourites" disableFocusListener arrow>
+                <FavoriteBorderIcon sx={{ marginTop: "5px" }} />
+              </Tooltip>
             </div>
           </div>
         </div>
