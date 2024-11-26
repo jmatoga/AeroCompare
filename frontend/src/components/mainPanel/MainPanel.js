@@ -28,6 +28,7 @@ import {
   CardActionArea,
   CardContent,
 } from "@mui/material";
+import ButtonMaterial from "@mui/material/Button";
 import { HourSlider, PriceSlider, TripTimeSlider } from "./Slider";
 import CustomCheckbox from "./CustomCheckBox.js";
 import Tab from "@mui/material/Tab";
@@ -45,13 +46,14 @@ import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import TripCard from "./TripCard.js";
 import Pagination from "@mui/material/Pagination";
+import SplitButton from "./SplitButton.js";
 
 export default function MainPanel() {
   {
     /* Trip Type, Stops, Modal */
   }
   const [tripType, setTripType] = useState("one-way");
-  const [stops, setStops] = useState("Any");
+  const [stops, setStops] = useState("Any number of stops");
   const [showModal, setShowModal] = useState(false);
 
   {
@@ -160,7 +162,7 @@ export default function MainPanel() {
   }, []);
 
   useEffect(() => {
-    handleFilters(currentPage);
+    handleSearch(currentPage);
   }, [currentPage]);
 
   const fetchData = async () => {
@@ -180,6 +182,7 @@ export default function MainPanel() {
       setAirlinesList([
         { label: "ALL", value: { id: "123", name: "ALL" }, key: "123" },
       ]);
+
       let i = 0;
       setClasses([
         { id: "123", name: "ALL" },
@@ -191,7 +194,6 @@ export default function MainPanel() {
             .replace(/(?:^|\s)\S/g, (match) => match.toUpperCase()), // Kapitalizacja pierwszej litery lub pierwszej po spacji
         })),
       ]);
-
       setClassesList([
         { label: "ALL", value: { id: "123", name: "ALL" }, key: "123" },
       ]);
@@ -200,23 +202,26 @@ export default function MainPanel() {
     }
   };
 
-  const handleFilters = async (page) => {
+  const handleSearch = async (page) => {
+    const params = new URLSearchParams({
+      page: page - 1, // Spring używa indeksu od 0
+      size: 5, // Liczba elementów na stronę
+      departureDate:
+        selectedDepartureDate !== null ? selectedDepartureDate : "",
+      airlines: selectedDepartureDate !== "ALL" ? selectedDepartureDate : "",
+    });
+
+    departureAirportList.forEach((airport) => {
+      params.append("airportIdDTOList", airport.value.id);
+    });
+
     const [flightsResponse] = await Promise.all([
-      getRequestWithParams("api/getAllFlights", {
-        params: {
-          page: page - 1, // Spring używa indeksu od 0
-          size: 5, // Liczba elementów na stronę
-        },
-      }),
+      getRequestWithParams("api/getAllFlights", { params }),
     ]);
 
     // Zaktualizowanie danych dla airportów
     setFlights(flightsResponse.data.content);
     setTotalPages(flightsResponse.data.totalPages);
-  };
-
-  const handleTripType = (option) => {
-    setTripType(option);
   };
 
   const handleChangeSelectedReturnDays = (day, event) => {
@@ -256,7 +261,7 @@ export default function MainPanel() {
       <div className="col-md-3 mt-2">
         <div className="col mt-3">
           <TripTimeSlider
-            label="Time trip"
+            label="Trip time"
             value={tripTimeValue}
             setValue={setTripTimeValue}
           />
@@ -357,55 +362,45 @@ export default function MainPanel() {
                 <Form>
                   <div className="d-flex justify-content-between align-items-center">
                     {/* Trip Type Selection */}
-                    <div className="d-flex flex-column">
-                      <Form.Group controlId="tripType">
-                        <p>Type of trip:</p>
-                        <ButtonGroup>
-                          <Button
-                            variant={
-                              tripType === "one-way" ? "primary" : "secondary"
-                            }
-                            onClick={() => handleTripType("one-way")}
-                          >
-                            One-way
-                          </Button>
-                          <Button
-                            variant={
-                              tripType === "return" ? "primary" : "secondary"
-                            }
-                            onClick={() => handleTripType("return")}
-                          >
-                            With return
-                          </Button>
-                        </ButtonGroup>
+                    <div className="ms-3 d-flex align-items-center">
+                      <ButtonGroup
+                        variant="contained"
+                        aria-label="Basic button group"
+                      >
                         <Button
-                          variant="primary"
-                          onClick={() => handleFilters(currentPage)}
+                          onClick={() => setTripType("one-way")}
+                          variant={
+                            tripType === "one-way" ? "primary" : "secondary"
+                          }
                         >
-                          Zastosuj filtry
+                          ONE-WAY
                         </Button>
-                      </Form.Group>
+                        <Button
+                          onClick={() => setTripType("return")}
+                          variant={
+                            tripType === "return" ? "primary" : "secondary"
+                          }
+                        >
+                          RETURN
+                        </Button>
+                      </ButtonGroup>
                     </div>
 
                     {/* Stops */}
                     <div className="ms-3 d-flex align-items-center">
-                      <FormControl sx={{ m: 1, minWidth: 80 }}>
-                        <InputLabel id="demo-simple-select-autowidth-label">
-                          Stops
-                        </InputLabel>
-                        <Select
-                          labelId="demo-simple-select-autowidth-label"
-                          id="demo-simple-select-autowidth"
-                          value={stops}
-                          onChange={(event) => setStops(event.target.value)}
-                          autoWidth
-                          label="Stops"
+                      <SplitButton setStops={setStops} />
+                    </div>
+
+                    {/* Search */}
+                    <div className="ms-3 d-flex align-items-center">
+                      <FormControl sx={{ m: 1, width: 135 }}>
+                        <ButtonMaterial
+                          variant="contained"
+                          color="success"
+                          onClick={() => handleSearch(currentPage)}
                         >
-                          <MenuItem value="Any">Any</MenuItem>
-                          <MenuItem value="Direct">Direct</MenuItem>
-                          <MenuItem value="Up to 1 stop">Up to 1 stop</MenuItem>
-                          <MenuItem value="Up to 2 stop">Up to 2 stop</MenuItem>
-                        </Select>
+                          Search
+                        </ButtonMaterial>
                       </FormControl>
                     </div>
 
@@ -453,11 +448,9 @@ export default function MainPanel() {
                   {/* Departure Airport */}
                   <AirportSelect
                     label="Departure"
-                    // className={
-                    //   selectedOption === "one-way"
-                    //     ? "col-md-4 mt-2"
-                    //     : "col-md-3 mt-2"
-                    // }
+                    className={
+                      tripType === "one-way" ? "col-md-4 mt-2" : "col-md-3 mt-2"
+                    }
                     airport={departureAirport}
                     airportList={departureAirportList}
                     setAirportList={setDepartureAirportList}
@@ -476,11 +469,9 @@ export default function MainPanel() {
                   {/* Departure Date */}
                   <DatePicker
                     label="Departure Date"
-                    // className={
-                    //   selectedOption === "one-way"
-                    //     ? "col-md-4 mt-2"
-                    //     : "col-md-3 mt-2"
-                    // }
+                    className={
+                      tripType === "one-way" ? "col-md-4 mt-2" : "col-md-3 mt-2"
+                    }
                     selectedDate={selectedDepartureDate}
                     setSelectedDate={setSelectedDepartureDate}
                   />
@@ -513,11 +504,22 @@ export default function MainPanel() {
                   expandIcon={<ExpandMoreIcon />}
                   aria-controls="panel1-content"
                   id="panel1-header"
-                  background="primary"
+                  sx={{
+                    minHeight: "56px", // Stała wysokość
+                    height: "56px", // Zapobiega zmianie rozmiaru
+                    "&.Mui-expanded": { height: "56px", top: "0" }, // Zachowuje wysokość po rozwinięciu
+                  }}
                 >
-                  <Typography>More Filters</Typography>
+                  <Typography
+                    variant="h5"
+                    // sx={{fontWeight: "bold" }}
+                  >
+                    More Filters
+                  </Typography>
                 </AccordionSummary>
-                <AccordionDetails>
+                <AccordionDetails
+                  sx={{ paddingTop: "0px", borderTop: "1px solid darkgray" }}
+                >
                   <Form.Group>
                     <div className="row">
                       {/* Airlines */}
@@ -681,6 +683,18 @@ export default function MainPanel() {
                     baggage={baggageCount}
                   />
                 ))}
+                {flights.length === 0 && (
+                  <Box
+                    display="flex"
+                    justifyContent="center"
+                    alignItems="center"
+                    height="200px"
+                  >
+                    <Typography variant="h3" align="center">
+                      No results for the selected filters
+                    </Typography>
+                  </Box>
+                )}
               </CardContent>
             </Card>
           </ListGroup>

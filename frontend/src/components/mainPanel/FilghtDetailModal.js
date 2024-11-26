@@ -1,6 +1,12 @@
 import React from "react";
 import { Modal, Button, Table } from "react-bootstrap";
-import { FaPlaneDeparture, FaPlaneArrival, FaTicketAlt } from "react-icons/fa";
+import {
+  FaPlaneDeparture,
+  FaPlaneArrival,
+  FaTicketAlt,
+  FaBaby,
+  FaLuggageCart,
+} from "react-icons/fa";
 import { IoCalendarOutline, IoTimeOutline, IoPerson } from "react-icons/io5";
 import { format } from "date-fns";
 import InfoIcon from "@mui/icons-material/Info";
@@ -10,6 +16,9 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import FlightTakeoffIcon from "@mui/icons-material/FlightTakeoff";
 import FlightLandIcon from "@mui/icons-material/FlightLand";
+import { TbMoodKidFilled } from "react-icons/tb";
+import { MdLuggage } from "react-icons/md";
+import "./FlightDetailModal.css";
 
 export default function FlightDetailsModal({ show, onHide, flightDetails }) {
   return (
@@ -34,7 +43,7 @@ export default function FlightDetailsModal({ show, onHide, flightDetails }) {
             {flightDetails.departureAirport.city},{" "}
             {flightDetails.departureAirport.country}
           </div>
-          <div class="text-end">
+          <div className="text-end">
             <FlightLandIcon className="me-2 text-primary" />
             <strong>To:</strong>
             <br />
@@ -53,7 +62,7 @@ export default function FlightDetailsModal({ show, onHide, flightDetails }) {
             <br />
             {format(new Date(flightDetails.departureTime), "EEEE dd.MM.yyyy")}
           </div>
-          <div class="text-end">
+          <div className="text-end">
             <CalendarMonthIcon className="me-2 text-primary" />
             <strong>Date:</strong>
             <br />
@@ -72,7 +81,7 @@ export default function FlightDetailsModal({ show, onHide, flightDetails }) {
               minute: "2-digit",
             })}
           </div>
-          <div class="text-end">
+          <div className="text-end">
             <AccessTimeIcon className="me-2 text-primary" />
             <strong>Time:</strong>
             <br />
@@ -91,7 +100,7 @@ export default function FlightDetailsModal({ show, onHide, flightDetails }) {
             <br />
             {flightDetails.duration}
           </div>
-          <div class="text-end">
+          <div className="text-end">
             <AirplaneTicketIcon className="me-2 text-primary" />
             <strong>Ticket Number:</strong>
             <br />
@@ -112,49 +121,63 @@ export default function FlightDetailsModal({ show, onHide, flightDetails }) {
             range: {flightDetails.airplane.rangeKm} km
             <br />
             Max Speed: {flightDetails.airplane.maxSpeedKmh} km/h
+            <br /> SEATS i ile zostalo wolnych
           </div>
         </div>
 
         {/* Passengers Details */}
         <h5 className="text-center mb-3">Passengers Costs</h5>
         <Table striped bordered hover size="sm">
-          <thead>
+          <thead
+            style={{
+              border: "1px solid gray",
+              borderBottom: "4px solid gray",
+              // borderBottom: "1px solid gray",
+            }}
+          >
             <tr>
-              <th>#</th>
+              <th></th>
               <th>Passenger</th>
               <th>Price</th>
-              <th>Seat</th>
             </tr>
           </thead>
           <tbody>
-            {/* {flightDetails.passengers.map((passenger, index) => ( */}
-            <tr>
-              <td>1</td>
+            <tr className="bordered">
+              <td className="centered">
+                <IoPerson />
+              </td>
               <td>{"Adult"}</td>
               <td>{flightDetails.priceForAdult} PLN</td>
-              {/* <td>{passenger.seat}</td> */}
             </tr>
-            <tr>
-              <td>2</td>
+            <tr className="bordered">
+              <td className="centered">
+                <TbMoodKidFilled />
+              </td>
               <td>{"Child"}</td>
               <td>{flightDetails.priceForChild} PLN</td>
             </tr>
-            <tr>
-              <td>3</td>
+            <tr className="bordered">
+              <td className="centered">
+                <FaBaby />
+              </td>
               <td>{"Infant"}</td>
-              <td>FREE!</td>
+              <td style={{ color: "green" }}>FREE!</td>
             </tr>
-            <tr>
-              <td>4</td>
+
+            <tr className="bordered" style={{ borderTop: "4px solid gray" }}>
+              <td className="centered">
+                <MdLuggage />
+              </td>
               <td>{"Hand Luggage"}</td>
               <td>{flightDetails.priceForHandLuggage} PLN</td>
             </tr>
-            <tr>
-              <td>5</td>
+            <tr className="bordered">
+              <td className="centered">
+                <FaLuggageCart />
+              </td>
               <td>{"Checked Baggage"}</td>
               <td>{flightDetails.priceForCheckedLuggage} PLN</td>
             </tr>
-            {/* ))} */}
           </tbody>
         </Table>
       </Modal.Body>

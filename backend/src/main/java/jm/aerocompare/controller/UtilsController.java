@@ -2,6 +2,7 @@ package jm.aerocompare.controller;
 
 import jm.aerocompare.exception.CurrentUserNotAuthenticatedException;
 import jm.aerocompare.model.EClass;
+import jm.aerocompare.model.EStopNumber;
 import jm.aerocompare.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -17,7 +18,7 @@ import java.util.List;
 @RequestMapping("/api")
 @RequiredArgsConstructor
 @Log4j2
-public class ClassController {
+public class UtilsController {
     private final UserService userService;
 
     @GetMapping("/getAllClasses")
@@ -25,5 +26,12 @@ public class ClassController {
     public ResponseEntity<List<EClass>> getAllClasses() throws CurrentUserNotAuthenticatedException {
         userService.getCurrentUser();
         return ResponseEntity.ok(List.of(EClass.values()));
+    }
+
+    @GetMapping("/getAllStopNumbers")
+    @PreAuthorize("hasRole('ROLE_USER')" + "or hasRole('ROLE_MODERATOR')" + "or hasRole('ROLE_ADMIN')")
+    public ResponseEntity<List<EStopNumber>> getAllStopNumbers() throws CurrentUserNotAuthenticatedException {
+        userService.getCurrentUser();
+        return ResponseEntity.ok(List.of(EStopNumber.values()));
     }
 }

@@ -6,8 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -24,7 +22,6 @@ import java.util.UUID;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @JdbcTypeCode(SqlTypes.CHAR)
     @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
 
@@ -40,9 +37,9 @@ public class User {
     @Column(nullable = false, updatable = false)
     private LocalDateTime created;
 
-    //@ElementCollection(targetClass=ERole.class)
+    //    @ElementCollection(targetClass=ERole.class)
     @Enumerated(EnumType.STRING)
-    //@CollectionTable(name="user_role")
+//    @CollectionTable(name="user_role")
     @Column(name = "role")
     private ERole role;
 

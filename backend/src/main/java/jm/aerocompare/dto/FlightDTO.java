@@ -24,6 +24,7 @@ public class FlightDTO {
     private Integer priceForHandLuggage;
     private Integer priceForCheckedLuggage;
     private Integer distanceKm;
-    private String duration;
-    private Integer availableSeats;
+    private Integer durationHours;
+    private Integer durationMinutes;
+    private Integer seatsLeft;
 }

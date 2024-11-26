@@ -69,9 +69,9 @@ axios.interceptors.response.use(
     if (error.response && error.response.status === 401) {
       // Wylogowanie użytkownika (np. usunięcie tokena z cookies)
       Cookies.remove("accessToken"); // Usuwamy token
-
+      console.log("xddddd");
       // Można dodać przekierowanie na stronę logowania
-      useNavigate("/");
+      // useNavigate("/");
       window.location.href = "/"; // Zmieniamy na stronę logowania lub inny sposób nawigacji
 
       // Możesz też wyświetlić powiadomienie o błędzie

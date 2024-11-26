@@ -22,6 +22,6 @@ public class AirlineServiceImpl implements AirlineService {
 
     @Override
     public AirlineDTO getAirlineByAirplaneId(UUID airplaneId) {
-        return airlineMapper.mapToAirlineDTO(airlineRepository.findByAirplaneId(airplaneId.toString()));
+        return airlineMapper.mapToAirlineDTO(airlineRepository.findByAirplaneId(airplaneId));
     }
 }

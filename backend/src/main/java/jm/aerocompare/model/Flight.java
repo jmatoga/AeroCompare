@@ -5,8 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -20,7 +18,6 @@ import java.util.UUID;
 public class Flight {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @JdbcTypeCode(SqlTypes.CHAR)
     @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
 
@@ -40,7 +37,13 @@ public class Flight {
     private Integer priceForChild;
     private Integer priceForHandLuggage;
     private Integer priceForCheckedLuggage;
-    private String duration;
+    private Integer durationHours;
+    private Integer durationMinutes;
+    private Integer seatsLeft;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "class")
+    private EClass eClass;
 
     @ManyToOne
     @JoinColumn(name = "airplane_id", referencedColumnName = "id", nullable = false)

@@ -56,6 +56,7 @@ export default function TripCard({
       />
       {/* Main Trip Card */}
       <Card
+        key={key}
         sx={{
           width: "80%",
           height: "140px",
@@ -163,7 +164,7 @@ export default function TripCard({
                             fontWeight: "bold",
                           }}
                         >
-                          {flight.duration}
+                          {flight.durationHours}h {flight.durationMinutes}m
                         </Typography>
                         <Chip
                           variant="outlined"
