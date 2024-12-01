@@ -7,16 +7,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class FlightDTO {
-    private UUID id;
+public class RelationalFlightDTO {
     private Integer flightNumber;
     private AirportDTO departureAirport;
     private AirportDTO arrivalAirport;
@@ -32,18 +28,4 @@ public class FlightDTO {
     private Integer seatsLeft;
     private String bookingLink;
     private EClass eClass;
-    private List<RelationalFlightDTO> relationalFlights;
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        FlightDTO flightDTO = (FlightDTO) o;
-        return id != null && id.equals(flightDTO.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
 }

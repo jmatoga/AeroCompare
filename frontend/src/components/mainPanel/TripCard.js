@@ -10,17 +10,18 @@ import React, { useState } from "react";
 import { format } from "date-fns";
 import { tooltipClasses } from "@mui/material/Tooltip";
 import { styled } from "@mui/material/styles";
+import { is } from "date-fns/locale";
 
 export default function TripCard({
   key,
   flight,
   adults,
-  childrens,
+  children,
   infants,
   handLuggage,
   baggage,
 }) {
-  const passengersCount = adults + childrens + infants;
+  const passengersCount = adults + children + infants;
 
   const airportTooltipTitle = ({ airport }) => {
     return (
@@ -46,6 +47,82 @@ export default function TripCard({
   }));
 
   const [showModal, setShowModal] = useState(false);
+
+  const stopsLabel = () => {
+    if (isRelationalFlightsEmpty()) {
+      return "Direct";
+    } else if (
+      !isRelationalFlightsEmpty() &&
+      flight.relationalFlights.length === 1
+    ) {
+      return "1 Stop";
+    } else {
+      return `${flight.relationalFlights.length} Stops`;
+    }
+  };
+
+  const arrivalAirportLabel = () => {
+    if (isRelationalFlightsEmpty()) {
+      return flight.arrivalAirport.iata_code;
+    } else {
+      return flight.relationalFlights[flight.relationalFlights.length - 1]
+        .arrivalAirport.iata_code;
+    }
+  };
+
+  const handleDuration = () => {
+    const departureTime = new Date(flight.departureTime);
+    if (isRelationalFlightsEmpty()) {
+      const arrivalTime = new Date(flight.arrivalTime);
+      const durationInMs = Math.abs(arrivalTime - departureTime);
+      const durationInMinutes = Math.floor(durationInMs / (1000 * 60)); // Łączna liczba minut
+      const hours = Math.floor(durationInMinutes / 60); // Całkowita liczba godzin
+      const minutes = durationInMinutes % 60; // Reszta minut
+
+      return `${hours}h ${minutes}m`;
+    } else {
+      const arrivalTime = new Date(
+        flight.relationalFlights[
+          flight.relationalFlights.length - 1
+        ].arrivalTime
+      );
+
+      const diffMilliseconds = Math.abs(departureTime - arrivalTime);
+      const totalMinutes = Math.floor(diffMilliseconds / (1000 * 60));
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+
+      return `${hours}h ${minutes}m`;
+    }
+  };
+
+  const handlePrice = () => {
+    let price =
+      adults * flight.priceForAdult +
+      children * flight.priceForChild +
+      handLuggage * flight.priceForHandLuggage +
+      baggage * flight.priceForCheckedLuggage;
+    if (!isRelationalFlightsEmpty()) {
+      flight.relationalFlights.forEach((relationalFlight) => {
+        price +=
+          adults * relationalFlight.priceForAdult +
+          children * relationalFlight.priceForChild +
+          handLuggage * relationalFlight.priceForHandLuggage +
+          baggage * relationalFlight.priceForCheckedLuggage;
+      });
+    }
+    return price;
+  };
+
+  const isRelationalFlightsEmpty = () => {
+    return (
+      !flight.relationalFlights ||
+      flight.relationalFlights.every(
+        (item) => item === undefined || item === null
+      ) ||
+      flight.relationalFlights.length === 0
+    );
+  };
 
   return (
     <div style={{ display: "flex", alignItems: "flex-start" }}>
@@ -90,6 +167,25 @@ export default function TripCard({
                     sx={{ position: "absolute", top: 10 }}
                   >
                     {format(new Date(flight.departureTime), "EEE dd.MM.yyyy")}
+                  </Typography>
+                  <Typography
+                    variant="h5"
+                    component="div"
+                    sx={{
+                      position: "absolute",
+                      right: 15,
+                      top: 5,
+                      fontFamily:
+                        "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif", // Ustawiamy font-family
+                      color: "gray",
+                    }}
+                  >
+                    {/* Wybieranie która klasa jest głównie albo pierwszy i tooltip  */}
+                    {flight.eclass.substring(0, 1).toUpperCase() +
+                      flight.eclass
+                        .substring(1)
+                        .toLowerCase()
+                        .replaceAll("_", " ")}
                   </Typography>
                   <Chip
                     variant="outlined"
@@ -148,7 +244,7 @@ export default function TripCard({
                             transform:
                               "scaleX(12) translateY(-4px) translateX(-2px)",
                             fontWeight: "bold",
-                            color: "blue",
+                            color: "#00D1CD",
                           }}
                         />
                       </div>
@@ -164,11 +260,11 @@ export default function TripCard({
                             fontWeight: "bold",
                           }}
                         >
-                          {flight.durationHours}h {flight.durationMinutes}m
+                          {handleDuration()}
                         </Typography>
                         <Chip
                           variant="outlined"
-                          label="Directly"
+                          label={stopsLabel()}
                           sx={{
                             position: "relative",
                             top: -30,
@@ -182,16 +278,24 @@ export default function TripCard({
                       <div className="col mt-3 text-center">
                         <HtmlTooltip
                           title={airportTooltipTitle({
-                            airport: flight.arrivalAirport,
+                            airport: isRelationalFlightsEmpty()
+                              ? flight.arrivalAirport
+                              : flight.relationalFlights[
+                                  flight.relationalFlights.length - 1
+                                ].arrivalAirport,
                           })}
                           disableFocusListener
                           arrow
                         >
                           <Typography
                             variant="h6"
-                            sx={{ position: "absolute", top: 40, right: 195 }}
+                            sx={{
+                              position: "absolute",
+                              top: 40,
+                              right: 195,
+                            }}
                           >
-                            {flight.arrivalAirport.iata_code}
+                            {arrivalAirportLabel()}
                           </Typography>
                         </HtmlTooltip>
                         <RemoveIcon
@@ -200,7 +304,7 @@ export default function TripCard({
                             transform:
                               "scaleX(12) translateY(-4px) translateX(2px)",
                             fontWeight: "bold",
-                            color: "blue",
+                            color: "#00D1CD",
                           }}
                         />
                       </div>
@@ -213,7 +317,13 @@ export default function TripCard({
                           component="div"
                           sx={{ position: "relative", top: -10 }}
                         >
-                          {new Date(flight.arrivalTime).toLocaleTimeString([], {
+                          {new Date(
+                            isRelationalFlightsEmpty()
+                              ? flight.arrivalTime
+                              : flight.relationalFlights[
+                                  flight.relationalFlights.length - 1
+                                ].arrivalTime
+                          ).toLocaleTimeString([], {
                             hour: "2-digit",
                             minute: "2-digit",
                           })}
@@ -226,6 +336,7 @@ export default function TripCard({
             </div>
           </CardContent>
         </CardActionArea>
+
         {/* Dashed Vertical Line */}
         <div
           style={{
@@ -255,11 +366,7 @@ export default function TripCard({
         }}
       >
         <Typography variant="h4" align="center">
-          {adults * flight.priceForAdult +
-            childrens * flight.priceForChild +
-            handLuggage * flight.priceForHandLuggage +
-            baggage * flight.priceForCheckedLuggage}{" "}
-          PLN
+          {handlePrice()} PLN
         </Typography>
         <Typography variant="body2" align="center">
           for {passengersCount} passenger{passengersCount > 1 ? "s" : ""}
@@ -270,7 +377,15 @@ export default function TripCard({
         <div className="row">
           <div className="col-md-9 mt-2">
             <div className="col text-center">
-              <Button variant="contained" color="success">
+              <Button
+                variant="contained"
+                color="success"
+                onClick={() => (window.location.href = flight.bookingLink)}
+                sx={{
+                  fontFamily:
+                    "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif", // Ustawiamy font-family
+                }}
+              >
                 Book now!
               </Button>
             </div>

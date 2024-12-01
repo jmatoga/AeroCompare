@@ -97,8 +97,27 @@ export default function RegisterPanel() {
           Discover breathtaking destinations, plan unforgettable journeys, and
           let us guide you every step of the way.
         </p>
-        <Button variant="primary" size="lg" onClick={() => navigate("/")}>
-          Get Started
+        <Button
+          variant="primary"
+          size="lg"
+          onClick={() => navigate("/")}
+          style={{
+            backgroundColor: "#00D1CD", // Tło
+            color: "#fff", // Kolor tekstu
+            fontWeight: "bold", // Pogrubienie tekstu
+            border: "2px solid #00D1CD",
+            boxShadow: `0 4px 8px rgba(0, 0, 0, 0.2)`, // Efekt cienia
+            borderRadius: "7px", // Zaokrąglenie przycisku
+            transition: "all 0.3s ease", // Płynna zmiana dla efektów hover
+          }}
+          onMouseOver={(e) =>
+            (e.currentTarget.style.boxShadow = `0 6px 12px rgba(0, 0, 0, 0.3)`)
+          } // Cień przy najechaniu
+          onMouseOut={(e) =>
+            (e.currentTarget.style.boxShadow = `0 4px 8px rgba(0, 0, 0, 0.2)`)
+          } // Przywrócenie cienia
+        >
+          Start Aero Comparing
         </Button>
       </Container>
       <Container className="py-2" id="services">
@@ -110,7 +129,8 @@ export default function RegisterPanel() {
                 width: "32.2rem",
                 height: "25.4rem",
                 transform: "translateY(-8.1rem)",
-                background: "linear-gradient(135deg, #0a4d8a, #5ca2d8)",
+                // background: "linear-gradient(135deg, #0a4d8a, #5ca2d8)",
+                background: "linear-gradient(135deg, #00AFAE, #00D1CD)",
                 color: "white",
               }}
             >

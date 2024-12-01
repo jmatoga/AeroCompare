@@ -1,6 +1,7 @@
-import React from "react";
-import { Slider, Box, Typography } from "@mui/material";
+import React, { useState } from "react";
+import { Slider, Box, Typography, Button } from "@mui/material";
 import { styled } from "@mui/material/styles";
+import NorthIcon from "@mui/icons-material/North";
 
 export function HourSlider({
   label,
@@ -8,6 +9,8 @@ export function HourSlider({
   setValue,
   valuetext,
   minDistance = 1,
+  sortByTime,
+  setSortByTime,
 }) {
   const handleChange = (event, newValue, activeThumb) => {
     if (!Array.isArray(newValue)) {
@@ -45,6 +48,24 @@ export function HourSlider({
             <b>{valueLabelFormat(value[1])}</b>
           </>
         )}
+        <Button
+          sx={{
+            width: 30,
+            maxWidth: 30,
+            minWidth: 30,
+            padding: 0,
+            margin: 0,
+          }}
+          onClick={() => setSortByTime(!sortByTime)}
+        >
+          <NorthIcon
+            sx={{
+              transform: sortByTime ? "rotate(0deg)" : "rotate(180deg)",
+              transition: "transform 0.3s ease",
+              cursor: "pointer",
+            }}
+          />
+        </Button>
       </Typography>
       <Slider
         getAriaLabel={() => "Minimum distance shift"}
@@ -66,7 +87,14 @@ export function HourSlider({
   );
 }
 
-export function PriceSlider({ value, setValue, valuetext, minDistance = 100 }) {
+export function PriceSlider({
+  value,
+  setValue,
+  valuetext,
+  minDistance = 100,
+  sortByPrice,
+  setSortByPrice,
+}) {
   const handleChange = (event, newValue, activeThumb) => {
     if (!Array.isArray(newValue)) {
       return;
@@ -105,6 +133,24 @@ export function PriceSlider({ value, setValue, valuetext, minDistance = 100 }) {
             <b>{valueLabelFormat(value[1])}</b>
           </>
         )}
+        <Button
+          sx={{
+            width: 30,
+            maxWidth: 30,
+            minWidth: 30,
+            padding: 0,
+            margin: 0,
+          }}
+          onClick={() => setSortByPrice(!sortByPrice)}
+        >
+          <NorthIcon
+            sx={{
+              transform: sortByPrice ? "rotate(0deg)" : "rotate(180deg)",
+              transition: "transform 0.3s ease",
+              cursor: "pointer",
+            }}
+          />
+        </Button>
       </Typography>
       <Slider
         getAriaLabel={() => "Minimum distance shift"}
@@ -126,7 +172,13 @@ export function PriceSlider({ value, setValue, valuetext, minDistance = 100 }) {
   );
 }
 
-export function TripTimeSlider({ label, value, setValue }) {
+export function TripTimeSlider({
+  label,
+  value,
+  setValue,
+  sortByTripTime,
+  setSortByTripTime,
+}) {
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
@@ -148,6 +200,24 @@ export function TripTimeSlider({ label, value, setValue }) {
             : <b>Any time</b>
           </>
         )}
+        <Button
+          sx={{
+            width: 30,
+            maxWidth: 30,
+            minWidth: 30,
+            padding: 0,
+            margin: 0,
+          }}
+          onClick={() => setSortByTripTime(!sortByTripTime)}
+        >
+          <NorthIcon
+            sx={{
+              transform: sortByTripTime ? "rotate(0deg)" : "rotate(180deg)",
+              transition: "transform 0.3s ease",
+              cursor: "pointer",
+            }}
+          />
+        </Button>
       </Typography>
       <Slider
         getAriaLabel={() => "Minimum distance shift"}

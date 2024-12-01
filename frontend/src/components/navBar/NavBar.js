@@ -2,12 +2,20 @@ import React from "react";
 import { Navbar, Nav, Container } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import "./NavBar.css";
+import "../../resources/Bebas-Neue.ttf";
 
 export default function NavBar({ isAdmin }) {
   return (
     <Navbar className="navbar-custom" expand="lg">
       <Container>
-        <Navbar.Brand as={Link} to="/">
+        <Navbar.Brand
+          as={Link}
+          to="/"
+          style={{
+            fontFamily:
+              "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif", // Ustawiamy font-family
+          }}
+        >
           Aero Compare
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />

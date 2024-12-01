@@ -61,28 +61,28 @@ axios.defaults.headers.patch["Content-Type"] = "application/json";
 axios.defaults.headers.get["Content-Type"] = "application/json";
 axios.defaults.withCredentials = true;
 
-// Interceptor do obsługi odpowiedzi
-axios.interceptors.response.use(
-  (response) => response, // Jeśli odpowiedź jest poprawna, po prostu ją zwróć
-  (error) => {
-    // Sprawdzamy, czy odpowiedź ma status 401
-    if (error.response && error.response.status === 401) {
-      // Wylogowanie użytkownika (np. usunięcie tokena z cookies)
-      Cookies.remove("accessToken"); // Usuwamy token
-      console.log("xddddd");
-      // Można dodać przekierowanie na stronę logowania
-      // useNavigate("/");
-      window.location.href = "/"; // Zmieniamy na stronę logowania lub inny sposób nawigacji
+// // Interceptor do obsługi odpowiedzi
+// axios.interceptors.response.use(
+//   (response) => response, // Jeśli odpowiedź jest poprawna, po prostu ją zwróć
+//   (error) => {
+//     // Sprawdzamy, czy odpowiedź ma status 401
+//     if (error.response && error.response.status === 401) {
+//       // Wylogowanie użytkownika (np. usunięcie tokena z cookies)
+//       Cookies.remove("accessToken"); // Usuwamy token
+//       console.log("xddddd");
+//       // Można dodać przekierowanie na stronę logowania
+//       // useNavigate("/");
+//       window.location.href = "/"; // Zmieniamy na stronę logowania lub inny sposób nawigacji
 
-      // Możesz też wyświetlić powiadomienie o błędzie
-      // alert("Session expired, please log in again.");
+//       // Możesz też wyświetlić powiadomienie o błędzie
+//       // alert("Session expired, please log in again.");
 
-      return Promise.reject(error); // Przerywamy dalsze przetwarzanie błędu
-    }
+//       return Promise.reject(error); // Przerywamy dalsze przetwarzanie błędu
+//     }
 
-    return Promise.reject(error); // Inne błędy
-  }
-);
+//     return Promise.reject(error); // Inne błędy
+//   }
+// );
 
 // Funkcja GET
 export const getRequest = async (url) => {
@@ -110,6 +110,21 @@ export const getRequestWithParams = async (url, { params }) => {
     return response;
   } catch (error) {
     throw new Error(`Error fetching data from ${url}: ${error.message}`);
+  }
+};
+
+// Funkcja POST with Params
+export const postRequestWithParams = async (url, { params }) => {
+  try {
+    const response = await axios({
+      method: "POST",
+      url: url,
+      withCredentials: true, // Ważne, jeśli używasz cookies
+      params: params,
+    });
+    return response;
+  } catch (error) {
+    throw new Error(`Error posting data from ${url}: ${error.message}`);
   }
 };
 

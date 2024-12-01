@@ -3,9 +3,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { getRequest, putRequest } from "../axios_helper.js";
 import Cookies from "js-cookie";
 import "./UserPanel.css";
-import { Button, Container } from "react-bootstrap";
+import { Container } from "react-bootstrap";
 import backgroundImage from "../../resources/2.jpg";
 import AlertsComponent from "../utils/AlertsComponent.js";
+import { Button } from "@mui/material";
 
 export default function UserPanel({ onLogin, isAdmin }) {
   let navigate = useNavigate();
@@ -148,19 +149,33 @@ export default function UserPanel({ onLogin, isAdmin }) {
               {/* {info && <p className="text-danger">{info}</p>} */}
               <div className="d-grid gap-2">
                 <Button
-                  variant="primary"
+                  variant="contained"
                   type="submit"
                   id="SaveChangesButton"
                   name="SaveChangesButton"
+                  sx={{
+                    color: "#FFFFFF", // Kolor tekstu
+                    backgroundColor: "#00D1CD",
+                    "&:hover": {
+                      backgroundColor: "#00B3B0", // Ciemniejszy odcień na hover
+                    },
+                  }}
                 >
-                  Save changes
+                  Save Changes
                 </Button>
                 <Button
-                  variant="danger"
+                  variant="contained" // Możesz użyć 'outlined' lub 'text' w zależności od potrzeb
                   type="button"
                   id="LogoutButton"
                   name="LogoutButton"
                   onClick={handleLogout}
+                  sx={{
+                    backgroundColor: "#D32F2F", // Czerwony kolor tła (odpowiednik 'danger')
+                    color: "white", // Kolor tekstu na biały
+                    "&:hover": {
+                      backgroundColor: "#C62828", // Ciemniejszy czerwony po najechaniu
+                    },
+                  }}
                 >
                   Log out
                 </Button>

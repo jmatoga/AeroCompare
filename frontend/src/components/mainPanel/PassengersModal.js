@@ -1,17 +1,18 @@
 import React from "react";
-import { Modal, Button, ButtonGroup } from "react-bootstrap";
+import { Modal } from "react-bootstrap";
 import { IoPerson } from "react-icons/io5";
 import { TbMoodKidFilled } from "react-icons/tb";
 import { FaBaby, FaLuggageCart } from "react-icons/fa";
 import { MdLuggage } from "react-icons/md";
+import { Button, ButtonGroup } from "@mui/material";
 
 export default function PassengersModal({
   show,
   onHide,
   passengersCount,
   setPassengersCount,
-  childrensCount,
-  setChildrensCount,
+  childrenCount,
+  setChildrenCount,
   infantsCount,
   setInfantsCount,
   handLuggageCount,
@@ -20,17 +21,17 @@ export default function PassengersModal({
   setBaggageCount,
 }) {
   const incrementPassenger = (setCount) => {
-    if (passengersCount + childrensCount + infantsCount < 9) {
+    if (passengersCount + childrenCount + infantsCount < 9) {
       setCount((prev) => prev + 1);
     }
   };
   const incrementHandLuggage = (setCount, count) => {
-    if (count < passengersCount + childrensCount) {
+    if (count < passengersCount + childrenCount) {
       setCount((prev) => prev + 1);
     }
   };
   const incrementBaggage = (setCount, count) => {
-    if (count < (passengersCount + childrensCount) * 2) {
+    if (count < (passengersCount + childrenCount) * 2) {
       setCount((prev) => prev + 1);
     }
   };
@@ -39,12 +40,12 @@ export default function PassengersModal({
     if (count > 0) {
       setCount((prev) => prev - 1);
 
-      if (handLuggageCount > passengersCount + childrensCount - 1) {
+      if (handLuggageCount > passengersCount + childrenCount - 1) {
         setHandLuggageCount((prev) => prev - 1);
       }
-      if (baggageCount >= (passengersCount + childrensCount) * 2 - 1) {
+      if (baggageCount >= (passengersCount + childrenCount) * 2 - 1) {
         setBaggageCount((prev) => prev - 1);
-        if (baggageCount - 1 >= (passengersCount + childrensCount) * 2 - 1) {
+        if (baggageCount - 1 >= (passengersCount + childrenCount) * 2 - 1) {
           setBaggageCount((prev) => prev - 1);
         }
       }
@@ -64,23 +65,41 @@ export default function PassengersModal({
         {/* Passengers Section */}
         <div className="d-flex justify-content-between align-items-center mb-3">
           <p className="mb-0">
-            <IoPerson /> <b>Adults</b> (above 11):{" "}
+            <IoPerson
+              style={{
+                color: "#00D1CD",
+              }}
+            />{" "}
+            <b>Adults</b> (above 11):{" "}
           </p>
           <ButtonGroup>
             <Button
-              variant={passengersCount > 0 ? "secondary" : "light"}
+              variant="contained"
               disabled={passengersCount <= 0}
               onClick={() =>
                 decrementPassenger(setPassengersCount, passengersCount)
               }
+              style={{
+                backgroundColor: passengersCount > 0 ? "#00D1CD" : "grey",
+                color: "#fff", // Dodanie kontrastowego koloru tekstu
+              }}
             >
               -
             </Button>
-            <Button variant="light" disabled>
+            <Button
+              variant="light"
+              disabled
+              style={{
+                color: "gray",
+              }}
+            >
               <strong>{passengersCount}</strong>
             </Button>
             <Button
-              variant={passengersCount < 9 ? "secondary" : "light"}
+              style={{
+                backgroundColor: passengersCount < 9 ? "#00D1CD" : "grey",
+                color: "#fff", // Dodanie kontrastowego koloru tekstu
+              }}
               disabled={passengersCount >= 9}
               onClick={() => incrementPassenger(setPassengersCount)}
             >
@@ -91,25 +110,42 @@ export default function PassengersModal({
 
         <div className="d-flex justify-content-between align-items-center mb-3">
           <p className="mb-0">
-            <TbMoodKidFilled /> <b>Childrens</b> (2 - 11):{" "}
+            <TbMoodKidFilled
+              style={{
+                color: "#00D1CD",
+              }}
+            />{" "}
+            <b>Children</b> (2 - 11):{" "}
           </p>
           <ButtonGroup>
             <Button
-              variant={childrensCount > 0 ? "secondary" : "light"}
-              disabled={childrensCount <= 0}
+              style={{
+                backgroundColor: childrenCount > 0 ? "#00D1CD" : "grey",
+                color: "#fff", // Dodanie kontrastowego koloru tekstu
+              }}
+              disabled={childrenCount <= 0}
               onClick={() =>
-                decrementPassenger(setChildrensCount, childrensCount)
+                decrementPassenger(setChildrenCount, childrenCount)
               }
             >
               -
             </Button>
-            <Button variant="light" disabled>
-              <strong>{childrensCount}</strong>
+            <Button
+              variant="light"
+              disabled
+              style={{
+                color: "gray",
+              }}
+            >
+              <strong>{childrenCount}</strong>
             </Button>
             <Button
-              variant={childrensCount < 9 ? "secondary" : "light"}
-              disabled={childrensCount >= 9}
-              onClick={() => incrementPassenger(setChildrensCount)}
+              style={{
+                backgroundColor: childrenCount < 9 ? "#00D1CD" : "grey",
+                color: "#fff", // Dodanie kontrastowego koloru tekstu
+              }}
+              disabled={childrenCount >= 9}
+              onClick={() => incrementPassenger(setChildrenCount)}
             >
               +
             </Button>
@@ -118,11 +154,19 @@ export default function PassengersModal({
 
         <div className="d-flex justify-content-between align-items-center mb-3">
           <p className="mb-0">
-            <FaBaby /> <b>Infants</b> (under 2):{" "}
+            <FaBaby
+              style={{
+                color: "#00D1CD",
+              }}
+            />{" "}
+            <b>Infants</b> (under 2):{" "}
           </p>
           <ButtonGroup>
             <Button
-              variant={infantsCount > 0 ? "secondary" : "light"}
+              style={{
+                backgroundColor: infantsCount > 0 ? "#00D1CD" : "grey",
+                color: "#fff", // Dodanie kontrastowego koloru tekstu
+              }}
               disabled={infantsCount <= 0}
               onClick={() =>
                 decrementBaggageOrInfants(setInfantsCount, infantsCount)
@@ -130,11 +174,20 @@ export default function PassengersModal({
             >
               -
             </Button>
-            <Button variant="light" disabled>
+            <Button
+              variant="light"
+              disabled
+              style={{
+                color: "gray",
+              }}
+            >
               <strong>{infantsCount}</strong>
             </Button>
             <Button
-              variant={infantsCount < 9 ? "secondary" : "light"}
+              style={{
+                backgroundColor: infantsCount < 9 ? "#00D1CD" : "grey",
+                color: "#fff", // Dodanie kontrastowego koloru tekstu
+              }}
               disabled={infantsCount >= 9}
               onClick={() => incrementPassenger(setInfantsCount)}
             >
@@ -148,11 +201,19 @@ export default function PassengersModal({
 
         <div className="d-flex justify-content-between align-items-center mb-3">
           <p className="mb-0">
-            <MdLuggage /> <b>Hand Luggage</b>
+            <MdLuggage
+              style={{
+                color: "#00D1CD",
+              }}
+            />{" "}
+            <b>Hand Luggage</b>
           </p>
           <ButtonGroup>
             <Button
-              variant={handLuggageCount > 0 ? "secondary" : "light"}
+              style={{
+                backgroundColor: handLuggageCount > 0 ? "#00D1CD" : "grey",
+                color: "#fff", // Dodanie kontrastowego koloru tekstu
+              }}
               disabled={handLuggageCount <= 0}
               onClick={() =>
                 decrementBaggageOrInfants(setHandLuggageCount, handLuggageCount)
@@ -160,12 +221,24 @@ export default function PassengersModal({
             >
               -
             </Button>
-            <Button variant="light" disabled>
+            <Button
+              variant="light"
+              disabled
+              style={{
+                color: "gray",
+              }}
+            >
               <strong>{handLuggageCount}</strong>
             </Button>
             <Button
-              variant={handLuggageCount < 9 ? "secondary" : "light"}
-              disabled={handLuggageCount >= 9}
+              style={{
+                backgroundColor:
+                  handLuggageCount < passengersCount + childrenCount
+                    ? "#00D1CD"
+                    : "grey",
+                color: "#fff", // Dodanie kontrastowego koloru tekstu
+              }}
+              disabled={handLuggageCount >= passengersCount + childrenCount}
               onClick={() =>
                 incrementHandLuggage(setHandLuggageCount, handLuggageCount)
               }
@@ -177,11 +250,19 @@ export default function PassengersModal({
 
         <div className="d-flex justify-content-between align-items-center mb-3">
           <p className="mb-0">
-            <FaLuggageCart /> <b>Baggage</b>
+            <FaLuggageCart
+              style={{
+                color: "#00D1CD",
+              }}
+            />{" "}
+            <b>Baggage</b>
           </p>
           <ButtonGroup>
             <Button
-              variant={baggageCount > 0 ? "secondary" : "light"}
+              style={{
+                backgroundColor: baggageCount > 0 ? "#00D1CD" : "grey",
+                color: "#fff", // Dodanie kontrastowego koloru tekstu
+              }}
               disabled={baggageCount <= 0}
               onClick={() =>
                 decrementBaggageOrInfants(setBaggageCount, baggageCount)
@@ -189,12 +270,24 @@ export default function PassengersModal({
             >
               -
             </Button>
-            <Button variant="light" disabled>
+            <Button
+              variant="light"
+              disabled
+              style={{
+                color: "gray",
+              }}
+            >
               <strong>{baggageCount}</strong>
             </Button>
             <Button
-              variant={baggageCount < 9 ? "secondary" : "light"}
-              disabled={baggageCount >= 9}
+              style={{
+                backgroundColor:
+                  baggageCount < (passengersCount + childrenCount) * 2
+                    ? "#00D1CD"
+                    : "grey",
+                color: "#fff", // Dodanie kontrastowego koloru tekstu
+              }}
+              disabled={baggageCount >= (passengersCount + childrenCount) * 2}
               onClick={() => incrementBaggage(setBaggageCount, baggageCount)}
             >
               +
@@ -204,7 +297,7 @@ export default function PassengersModal({
       </Modal.Body>
 
       <Modal.Footer>
-        <Button variant="success" onClick={onHide}>
+        <Button color="success" variant="contained" onClick={onHide}>
           Done
         </Button>
       </Modal.Footer>

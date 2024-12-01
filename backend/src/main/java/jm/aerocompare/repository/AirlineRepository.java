@@ -15,5 +15,4 @@ public interface AirlineRepository extends JpaRepository<Airline, UUID> {
                            "(SELECT airline_id FROM airline_airplanes " +
                            "WHERE airplane_id = :airplaneId LIMIT 1)", nativeQuery = true)
     Airline findByAirplaneId(@Param("airplaneId") UUID airplaneId);
-
 }

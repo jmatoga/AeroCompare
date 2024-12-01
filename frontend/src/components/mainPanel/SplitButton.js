@@ -10,6 +10,7 @@ import MenuItem from "@mui/material/MenuItem";
 import MenuList from "@mui/material/MenuList";
 import { getRequest } from "../axios_helper";
 import { se } from "date-fns/locale";
+import "../../resources/Bebas-Neue.ttf";
 
 export default function SplitButton({ setStops }) {
   const [open, setOpen] = React.useState(false);
@@ -59,20 +60,50 @@ export default function SplitButton({ setStops }) {
         variant="contained"
         ref={anchorRef}
         aria-label="Button group with a nested menu"
+        style={{
+          borderRadius: "7px", // Zaokrąglenie dla całej grupy
+        }}
       >
-        <Button>{stopsList && stopsList[selectedIndex]}</Button>
+        {/* Przyciski z tekstem */}
+        <Button
+          onClick={handleToggle}
+          sx={{
+            color: "white",
+            fontWeight: "bold",
+            fontSize: "16px", // Ustawiamy wielkość czcionki
+            fontFamily:
+              "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif", // Ustawiamy font-family
+            borderTopLeftRadius: "7px", // Zaokrąglenie tylko lewego górnego rogu
+            borderBottomLeftRadius: "7px", // Zaokrąglenie tylko lewego dolnego rogu
+            backgroundColor: "#00D1CD", // Kolor tła
+          }}
+        >
+          {stopsList && stopsList[selectedIndex]}{" "}
+        </Button>
+
+        {/* Przycisk rozwijany */}
         <Button
           size="small"
           aria-controls={open ? "split-button-menu" : undefined}
           aria-expanded={open ? "true" : undefined}
           aria-haspopup="menu"
           onClick={handleToggle}
+          sx={{
+            fontSize: "16px", // Ustawiamy wielkość czcionki
+            fontFamily:
+              "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif", // Ustawiamy font-family
+            borderTopRightRadius: "7px", // Zaokrąglenie tylko prawego górnego rogu
+            borderBottomRightRadius: "7px", // Zaokrąglenie tylko prawego dolnego rogu
+            backgroundColor: "#00D1CD", // Kolor tła
+            border: `2px solid #00D1CD`, // Obramowanie w tym samym kolorze
+          }}
         >
-          <ArrowDropDownIcon />
+          <ArrowDropDownIcon sx={{ color: "white" }} />
         </Button>
       </ButtonGroup>
+      {/* Popper (menu rozwijane) */}
       <Popper
-        sx={{ zIndex: 1 }}
+        sx={{ zIndex: 1 }} // Zaokrąglenie dla całego menu
         open={open}
         anchorEl={anchorRef.current}
         role={undefined}

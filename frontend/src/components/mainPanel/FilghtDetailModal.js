@@ -19,113 +19,356 @@ import FlightLandIcon from "@mui/icons-material/FlightLand";
 import { TbMoodKidFilled } from "react-icons/tb";
 import { MdLuggage } from "react-icons/md";
 import "./FlightDetailModal.css";
+import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
 
 export default function FlightDetailsModal({ show, onHide, flightDetails }) {
+  const renderFlightRoute = (flightDetails, className) => {
+    return (
+      <div className={className}>
+        <div className="col mt-2">
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <FlightTakeoffIcon
+                className="me-2"
+                style={{
+                  color: "#00D1CD",
+                }}
+              />
+              <strong>From:</strong>
+              <br />
+              {flightDetails.departureAirport.name} (
+              {flightDetails.departureAirport.iata_code}) <br />
+              {flightDetails.departureAirport.city},{" "}
+              {flightDetails.departureAirport.country}
+            </div>
+            <div className="text-end">
+              <FlightLandIcon
+                className="me-2"
+                style={{
+                  color: "#00D1CD",
+                }}
+              />
+              <strong>To:</strong>
+              <br />
+              {flightDetails.arrivalAirport.name} (
+              {flightDetails.arrivalAirport.iata_code}) <br />
+              {flightDetails.arrivalAirport.city},{" "}
+              {flightDetails.arrivalAirport.country}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderDate = (flightDetails, className) => {
+    return (
+      <div className={className}>
+        <div className="col mt-2">
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <CalendarMonthIcon
+                className="me-2"
+                style={{
+                  color: "#00D1CD",
+                }}
+              />
+              <strong>Date:</strong>
+              <br />
+              {format(new Date(flightDetails.departureTime), "EEEE dd.MM.yyyy")}
+            </div>
+            <div className="text-end">
+              <CalendarMonthIcon
+                className="me-2"
+                style={{
+                  color: "#00D1CD",
+                }}
+              />
+              <strong>Date:</strong>
+              <br />
+              {format(new Date(flightDetails.arrivalTime), "EEEE dd.MM.yyyy")}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderTime = (flightDetails, className) => {
+    return (
+      <div className={className}>
+        <div className="col mt-2">
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <AccessTimeIcon
+                className="me-2"
+                style={{
+                  color: "#00D1CD",
+                }}
+              />
+              <strong>Time:</strong>
+              <br />
+              {new Date(flightDetails.departureTime).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </div>
+            <div className="text-end">
+              <AccessTimeIcon
+                className="me-2"
+                style={{
+                  color: "#00D1CD",
+                }}
+              />
+              <strong>Time:</strong>
+              <br />
+              {new Date(flightDetails.arrivalTime).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderDuration = (flightDetails, className, isRelationalFlight) => {
+    return (
+      <div className={className}>
+        <div className="col mt-2">
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <TimerIcon
+                className="me-2"
+                style={{
+                  color: "#00D1CD",
+                }}
+              />
+              <strong>Duration:</strong>
+              <br />
+              {handleDuration(isRelationalFlight)}
+            </div>
+            <div className="text-end">
+              <AirplaneTicketIcon
+                className="me-2"
+                style={{
+                  color: "#00D1CD",
+                }}
+              />
+              <strong>Ticket Number:</strong>
+              <br />
+              {flightDetails.airline.iata_code} {flightDetails.flightNumber}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const handleDuration = (isRelationalFlight) => {
+    if (!isRelationalFlight) {
+      const departureTime = new Date(flightDetails.departureTime);
+      const arrivalTime = new Date(flightDetails.arrivalTime);
+      const durationInMs = Math.abs(arrivalTime - departureTime);
+      const durationInMinutes = Math.floor(durationInMs / (1000 * 60)); // Łączna liczba minut
+      const hours = Math.floor(durationInMinutes / 60); // Całkowita liczba godzin
+      const minutes = durationInMinutes % 60; // Reszta minut
+
+      return `${hours}h ${minutes}m`;
+    } else {
+      const departureTime = new Date(
+        flightDetails.relationalFlights[
+          flightDetails.relationalFlights.length - 1
+        ].departureTime
+      );
+      const arrivalTime = new Date(
+        flightDetails.relationalFlights[
+          flightDetails.relationalFlights.length - 1
+        ].arrivalTime
+      );
+
+      const diffMilliseconds = Math.abs(departureTime - arrivalTime);
+      const totalMinutes = Math.floor(diffMilliseconds / (1000 * 60));
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+
+      return `${hours}h ${minutes}m`;
+    }
+  };
+
+  const renderAirplaneDetails = (flightDetails, className) => {
+    return (
+      <div className={className} style={{ position: "relative" }}>
+        <div className="col mt-2">
+          <InfoIcon
+            className="me-2"
+            style={{
+              color: "#00D1CD",
+            }}
+          />
+          <strong>Airplane Info:</strong>
+          <br />
+          {flightDetails.airplane.type} - {flightDetails.airplane.model}
+          <br />
+          year: {flightDetails.airplane.yearManufactured}
+          <br />
+          range: {flightDetails.airplane.rangeKm} km
+          <br />
+          Max Speed: {flightDetails.airplane.maxSpeedKmh} km/h
+          <br /> Seats: {flightDetails.seatsLeft} /{" "}
+          {flightDetails.airplane.seats}
+        </div>
+
+        <div
+          className="text-end"
+          style={{
+            position: "absolute",
+            top: "0",
+            right: "12px",
+            textAlign: "right",
+          }}
+        >
+          <WorkspacePremiumIcon
+            className="me-2"
+            style={{
+              color: "#00D1CD",
+            }}
+          />
+          <strong>Class:</strong>
+          <br />
+          {flightDetails.eclass.substring(0, 1).toUpperCase() +
+            flightDetails.eclass
+              .substring(1)
+              .toLowerCase()
+              .replaceAll("_", " ")}
+        </div>
+      </div>
+    );
+  };
+
+  const isRelationalFlightsEmpty = () => {
+    return (
+      !flightDetails.relationalFlights ||
+      flightDetails.relationalFlights.every(
+        (item) => item === undefined || item === null
+      ) ||
+      flightDetails.relationalFlights.length === 0
+    );
+  };
+
   return (
     <Modal show={show} onHide={onHide} size="lg" centered>
       <Modal.Header closeButton>
         <Modal.Title>
-          Flight Details: {flightDetails.airline.iata_code}{" "}
-          {flightDetails.flightNumber}
+          Flight Details:{" "}
+          <b>
+            {flightDetails.airline.iata_code} {flightDetails.flightNumber}
+          </b>
+          {!isRelationalFlightsEmpty() && (
+            <>
+              {flightDetails.relationalFlights.map((flight, index, array) => {
+                const isLast = index === array.length - 1;
+                return (
+                  <span key={index}>
+                    {(!isLast || (isLast && array.length === 1)) && " + "}
+                    <b>
+                      {`${flight.airline.iata_code} ${flight.flightNumber}`}
+                    </b>
+                  </span>
+                );
+              })}
+            </>
+          )}
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <h5 className="text-center mb-4">Flight Information</h5>
+        <div className="row">
+          {/* Dashed Vertical Line */}
+          {!isRelationalFlightsEmpty() && (
+            <div
+              style={{
+                position: "absolute",
+                right: "47%", // Position inside the Card
+                height: "58%",
+                top: "8%",
+                width: "1px",
+                borderLeft: "2px dashed black",
+                background: "transparent", // Unikaj ukrywania przez inne warstwy
+              }}
+            ></div>
+          )}
 
-        {/* Flight Route */}
-        <div className="d-flex justify-content-between align-items-center mb-3">
-          <div>
-            <FlightTakeoffIcon className="me-2 text-primary" />
-            <strong>From:</strong>
-            <br />
-            {flightDetails.departureAirport.name} (
-            {flightDetails.departureAirport.iata_code}) <br />
-            {flightDetails.departureAirport.city},{" "}
-            {flightDetails.departureAirport.country}
-          </div>
-          <div className="text-end">
-            <FlightLandIcon className="me-2 text-primary" />
-            <strong>To:</strong>
-            <br />
-            {flightDetails.arrivalAirport.name} (
-            {flightDetails.arrivalAirport.iata_code}) <br />
-            {flightDetails.arrivalAirport.city},{" "}
-            {flightDetails.arrivalAirport.country}
-          </div>
-        </div>
+          {/* Flight Route */}
+          {isRelationalFlightsEmpty()
+            ? renderFlightRoute(flightDetails, "col-md-12")
+            : renderFlightRoute(flightDetails, "col-md-6")}
+          {isRelationalFlightsEmpty()
+            ? null
+            : renderFlightRoute(
+                flightDetails.relationalFlights[
+                  flightDetails.relationalFlights.length - 1
+                ],
+                "col-md-6"
+              )}
 
-        {/* Date */}
-        <div className="d-flex justify-content-between align-items-center mb-3">
-          <div>
-            <CalendarMonthIcon className="me-2 text-primary" />
-            <strong>Date:</strong>
-            <br />
-            {format(new Date(flightDetails.departureTime), "EEEE dd.MM.yyyy")}
-          </div>
-          <div className="text-end">
-            <CalendarMonthIcon className="me-2 text-primary" />
-            <strong>Date:</strong>
-            <br />
-            {format(new Date(flightDetails.arrivalTime), "EEEE dd.MM.yyyy")}
-          </div>
-        </div>
+          {/* Date */}
+          {isRelationalFlightsEmpty()
+            ? renderDate(flightDetails, "col-md-12")
+            : renderDate(flightDetails, "col-md-6")}
+          {isRelationalFlightsEmpty()
+            ? null
+            : renderDate(
+                flightDetails.relationalFlights[
+                  flightDetails.relationalFlights.length - 1
+                ],
+                "col-md-6"
+              )}
 
-        {/* Time */}
-        <div className="d-flex justify-content-between align-items-center mb-3">
-          <div>
-            <AccessTimeIcon className="me-2 text-primary" />
-            <strong>Time:</strong>
-            <br />
-            {new Date(flightDetails.departureTime).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
-          </div>
-          <div className="text-end">
-            <AccessTimeIcon className="me-2 text-primary" />
-            <strong>Time:</strong>
-            <br />
-            {new Date(flightDetails.arrivalTime).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
-          </div>
-        </div>
+          {/* Time */}
+          {isRelationalFlightsEmpty()
+            ? renderTime(flightDetails, "col-md-12")
+            : renderTime(flightDetails, "col-md-6")}
+          {isRelationalFlightsEmpty()
+            ? null
+            : renderTime(
+                flightDetails.relationalFlights[
+                  flightDetails.relationalFlights.length - 1
+                ],
+                "col-md-6"
+              )}
 
-        {/* Duration and Ticket Number */}
-        <div className="d-flex justify-content-between align-items-center mb-3">
-          <div>
-            <TimerIcon className="me-2 text-primary" />
-            <strong>Duration:</strong>
-            <br />
-            {flightDetails.duration}
-          </div>
-          <div className="text-end">
-            <AirplaneTicketIcon className="me-2 text-primary" />
-            <strong>Ticket Number:</strong>
-            <br />
-            {flightDetails.airline.iata_code} {flightDetails.flightNumber}
-          </div>
-        </div>
+          {/* Duration and Ticket Number */}
+          {isRelationalFlightsEmpty()
+            ? renderDuration(flightDetails, "col-md-12", false)
+            : renderDuration(flightDetails, "col-md-6", false)}
+          {isRelationalFlightsEmpty()
+            ? null
+            : renderDuration(
+                flightDetails.relationalFlights[
+                  flightDetails.relationalFlights.length - 1
+                ],
+                "col-md-6",
+                true
+              )}
 
-        {/* Airplane Details */}
-        <div className="d-flex justify-content-between align-items-center mb-3">
-          <div>
-            <InfoIcon className="me-2 text-primary" />
-            <strong>Airplane Info:</strong>
-            <br />
-            {flightDetails.airplane.type} - {flightDetails.airplane.model}
-            <br />
-            year: {flightDetails.airplane.yearManufactured}
-            <br />
-            range: {flightDetails.airplane.rangeKm} km
-            <br />
-            Max Speed: {flightDetails.airplane.maxSpeedKmh} km/h
-            <br /> SEATS i ile zostalo wolnych
-          </div>
+          {/* Airplane Details */}
+          {isRelationalFlightsEmpty()
+            ? renderAirplaneDetails(flightDetails, "col-md-12")
+            : renderAirplaneDetails(flightDetails, "col-md-6")}
+          {isRelationalFlightsEmpty()
+            ? null
+            : renderAirplaneDetails(
+                flightDetails.relationalFlights[
+                  flightDetails.relationalFlights.length - 1
+                ],
+                "col-md-6"
+              )}
         </div>
 
         {/* Passengers Details */}
+        <br />
         <h5 className="text-center mb-3">Passengers Costs</h5>
         <Table striped bordered hover size="sm">
           <thead
@@ -138,45 +381,109 @@ export default function FlightDetailsModal({ show, onHide, flightDetails }) {
             <tr>
               <th></th>
               <th>Passenger</th>
-              <th>Price</th>
+              <th>{isRelationalFlightsEmpty() ? "" : "Departure"} Price</th>
+              {isRelationalFlightsEmpty() ? null : <th>Arrival Price</th>}
             </tr>
           </thead>
           <tbody>
             <tr className="bordered">
               <td className="centered">
-                <IoPerson />
+                <IoPerson
+                  style={{
+                    color: "#00D1CD",
+                  }}
+                />
               </td>
               <td>{"Adult"}</td>
               <td>{flightDetails.priceForAdult} PLN</td>
+              {isRelationalFlightsEmpty() ? null : (
+                <td>
+                  {
+                    flightDetails.relationalFlights[
+                      flightDetails.relationalFlights.length - 1
+                    ].priceForAdult
+                  }{" "}
+                  PLN
+                </td>
+              )}
             </tr>
             <tr className="bordered">
               <td className="centered">
-                <TbMoodKidFilled />
+                <TbMoodKidFilled
+                  style={{
+                    color: "#00D1CD",
+                  }}
+                />
               </td>
               <td>{"Child"}</td>
               <td>{flightDetails.priceForChild} PLN</td>
+              {isRelationalFlightsEmpty() ? null : (
+                <td>
+                  {
+                    flightDetails.relationalFlights[
+                      flightDetails.relationalFlights.length - 1
+                    ].priceForChild
+                  }{" "}
+                  PLN
+                </td>
+              )}
             </tr>
             <tr className="bordered">
               <td className="centered">
-                <FaBaby />
+                <FaBaby
+                  style={{
+                    color: "#00D1CD",
+                  }}
+                />
               </td>
               <td>{"Infant"}</td>
               <td style={{ color: "green" }}>FREE!</td>
+              {isRelationalFlightsEmpty() ? null : (
+                <td style={{ color: "green" }}>FREE!</td>
+              )}
             </tr>
 
             <tr className="bordered" style={{ borderTop: "4px solid gray" }}>
               <td className="centered">
-                <MdLuggage />
+                <MdLuggage
+                  style={{
+                    color: "#00D1CD",
+                  }}
+                />
               </td>
               <td>{"Hand Luggage"}</td>
               <td>{flightDetails.priceForHandLuggage} PLN</td>
+              {isRelationalFlightsEmpty() ? null : (
+                <td>
+                  {
+                    flightDetails.relationalFlights[
+                      flightDetails.relationalFlights.length - 1
+                    ].priceForHandLuggage
+                  }{" "}
+                  PLN
+                </td>
+              )}
             </tr>
             <tr className="bordered">
               <td className="centered">
-                <FaLuggageCart />
+                <FaLuggageCart
+                  style={{
+                    color: "#00D1CD",
+                  }}
+                />
               </td>
               <td>{"Checked Baggage"}</td>
               <td>{flightDetails.priceForCheckedLuggage} PLN</td>
+              {isRelationalFlightsEmpty() ? null : (
+                <td>
+                  {
+                    flightDetails.relationalFlights[
+                      flightDetails.relationalFlights.length - 1
+                    ].priceForCheckedLuggage
+                  }{" "}
+                  PLN
+                </td>
+              )}
             </tr>
           </tbody>
         </Table>

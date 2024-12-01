@@ -15,7 +15,7 @@ export default function DatePicker({
   const inputRef = useRef(null); // Ref to the input element
 
   const handleDateChange = (date) => {
-    setSelectedDate(date);
+    setSelectedDate(date); // Ustawiamy nową datę
     setIsOpen(false); // Close the calendar after selecting a date
   };
 

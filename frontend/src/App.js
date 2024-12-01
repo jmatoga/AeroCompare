@@ -17,6 +17,7 @@ import UserPanel from "./components/userPanel/UserPanel";
 import MainPanel from "./components/mainPanel/MainPanel";
 import RegisterPanel from "./components/registerPanel/RegisterPanel";
 import AdminPanel from "./components/adminPanel/AdminPanel";
+import { createTheme, ThemeProvider } from "@mui/material";
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(!!Cookies.get("accessToken"));
@@ -27,59 +28,72 @@ export default function App() {
     setIsAdmin(false);
   }, []);
 
+  const theme = createTheme({
+    palette: {
+      primary: {
+        // main: "#0ab9b6",
+        main: "#00D1CD",
+      },
+    },
+  });
+
   return (
     <Router>
-      <div className="App">
-        {isLoggedIn && <Navbar className="header" isAdmin={isAdmin} />}
-        <div className="flex-grow-1">
-          <Routes>
-            <Route
-              path="/welcome"
-              element={!isLoggedIn ? <WelcomePanel /> : <Navigate to="/" />}
-            />
-            <Route
-              path="/login"
-              element={
-                !isLoggedIn ? (
-                  <LoginPanel onLogin={setIsLoggedIn} isAdmin={setIsAdmin} />
-                ) : (
-                  <Navigate to="/" />
-                )
-              }
-            />
-            <Route
-              path="/register"
-              element={!isLoggedIn ? <RegisterPanel /> : <Navigate to="/" />}
-            />
-            <Route
-              path="/"
-              element={isLoggedIn ? <MainPanel /> : <Navigate to="/welcome" />}
-            />
-            <Route
-              path="/admin"
-              element={
-                isLoggedIn && isAdmin ? (
-                  <AdminPanel />
-                ) : (
-                  <Navigate to="/welcome" />
-                )
-              }
-            />
-            <Route
-              path="/user"
-              element={
-                isLoggedIn ? (
-                  <UserPanel onLogin={setIsLoggedIn} isAdmin={setIsAdmin} />
-                ) : (
-                  <Navigate to="/login" />
-                )
-              }
-            />
-            <Route path="*" element={<Navigate to="/welcome" />} />
-          </Routes>
+      <ThemeProvider theme={theme}>
+        <div className="App">
+          {isLoggedIn && <Navbar className="header" isAdmin={isAdmin} />}
+          <div className="flex-grow-1">
+            <Routes>
+              <Route
+                path="/welcome"
+                element={!isLoggedIn ? <WelcomePanel /> : <Navigate to="/" />}
+              />
+              <Route
+                path="/login"
+                element={
+                  !isLoggedIn ? (
+                    <LoginPanel onLogin={setIsLoggedIn} isAdmin={setIsAdmin} />
+                  ) : (
+                    <Navigate to="/" />
+                  )
+                }
+              />
+              <Route
+                path="/register"
+                element={!isLoggedIn ? <RegisterPanel /> : <Navigate to="/" />}
+              />
+              <Route
+                path="/"
+                element={
+                  isLoggedIn ? <MainPanel /> : <Navigate to="/welcome" />
+                }
+              />
+              <Route
+                path="/admin"
+                element={
+                  isLoggedIn && isAdmin ? (
+                    <AdminPanel />
+                  ) : (
+                    <Navigate to="/welcome" />
+                  )
+                }
+              />
+              <Route
+                path="/user"
+                element={
+                  isLoggedIn ? (
+                    <UserPanel onLogin={setIsLoggedIn} isAdmin={setIsAdmin} />
+                  ) : (
+                    <Navigate to="/login" />
+                  )
+                }
+              />
+              <Route path="*" element={<Navigate to="/welcome" />} />
+            </Routes>
+          </div>
+          {/* <Footer className="footer" /> */}
         </div>
-        {/* <Footer className="footer" /> */}
-      </div>
+      </ThemeProvider>
     </Router>
   );
 }

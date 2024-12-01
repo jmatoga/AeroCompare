@@ -36,12 +36,21 @@ export default function AirportSelect({
 
   return (
     <div className={className}>
-      <Form.Label>{label}</Form.Label>
+      <Form.Label
+        style={{
+          // color: "red",
+          fontFamily:
+            "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif", // Ustawiamy font-family
+        }}
+      >
+        {label}
+      </Form.Label>
       <Select
         id="airportSelect"
         name="airportSelect"
         options={airport.map((a) => ({
           value: a,
+          label: `${a.iata_code} - ${a.country}, ${a.city} (${a.name})`,
         }))}
         formatOptionLabel={formatOptionLabel}
         onChange={(selectedOptions) => setAirportList(selectedOptions)}

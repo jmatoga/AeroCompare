@@ -10,7 +10,11 @@ import {
   InputGroup,
 } from "react-bootstrap";
 // import Select from "react-select";
-import { getRequest, getRequestWithParams } from "../axios_helper";
+import {
+  getRequest,
+  getRequestWithParams,
+  postRequestWithParams,
+} from "../axios_helper";
 import PassengersModal from "./PassengersModal";
 import MultiChoice from "./MultiChoice";
 import { BsFillPeopleFill, BsFillLuggageFill } from "react-icons/bs";
@@ -27,6 +31,8 @@ import {
   Card,
   CardActionArea,
   CardContent,
+  ThemeProvider,
+  createTheme,
 } from "@mui/material";
 import ButtonMaterial from "@mui/material/Button";
 import { HourSlider, PriceSlider, TripTimeSlider } from "./Slider";
@@ -47,20 +53,26 @@ import Select from "@mui/material/Select";
 import TripCard from "./TripCard.js";
 import Pagination from "@mui/material/Pagination";
 import SplitButton from "./SplitButton.js";
+import AeroCompareLogo1 from "../../resources/aero.png";
+import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 
 export default function MainPanel() {
+  const [sortOptions, setSortOptions] = useState([
+    { field: "price", ascending: true }, // Domyślne kryterium: cena rosnąco
+  ]);
+
   {
     /* Trip Type, Stops, Modal */
   }
   const [tripType, setTripType] = useState("one-way");
-  const [stops, setStops] = useState("Any number of stops");
+  const [stops, setStops] = useState();
   const [showModal, setShowModal] = useState(false);
 
   {
     /* Passengers */
   }
-  const [passengersCount, setPassengersCount] = useState(0);
-  const [childrensCount, setChildrensCount] = useState(0);
+  const [passengersCount, setPassengersCount] = useState(1);
+  const [childrenCount, setChildrenCount] = useState(0);
   const [infantsCount, setInfantsCount] = useState(0);
 
   {
@@ -118,23 +130,23 @@ export default function MainPanel() {
     /* Departure Days */
   }
   const [selectedDays, setSelectedDays] = useState([
-    "Mon",
-    "Tue",
-    "Wed",
-    "Thu",
-    "Fri",
-    "Sat",
-    "Sun",
+    "MONDAY",
+    "TUESDAY",
+    "WEDNESDAY",
+    "THURSDAY",
+    "FRIDAY",
+    "SATURDAY",
+    "SUNDAY",
   ]);
 
   const [selectedReturnDays, setSelectedReturnDays] = useState([
-    "Mon",
-    "Tue",
-    "Wed",
-    "Thu",
-    "Fri",
-    "Sat",
-    "Sun",
+    "MONDAY",
+    "TUESDAY",
+    "WEDNESDAY",
+    "THURSDAY",
+    "FRIDAY",
+    "SATURDAY",
+    "SUNDAY",
   ]);
 
   {
@@ -153,6 +165,27 @@ export default function MainPanel() {
   }
   const [currentPage, setCurrentPage] = useState(1); // MUI Pagination zaczyna od 1
   const [totalPages, setTotalPages] = useState(1);
+
+  {
+    /* Sorters */
+  }
+  const [sortByPrice, setSortByPrice] = useState(true);
+  const [sortByTripTime, setSortByTripTime] = useState(true);
+  const [sortByTripTimeReturn, setSortByTripTimeReturn] = useState(true);
+  const [sortByDepartureTime, setSortByDepartureTime] = useState(true);
+  const [sortByDepartureTimeReturn, setSortByDepartureTimeReturn] =
+    useState(true);
+  const [sortByArrivalTime, setSortByArrivalTime] = useState(true);
+  const [sortByArrivalTimeReturn, setSortByArrivalTimeReturn] = useState(true);
+
+  const theme = createTheme({
+    palette: {
+      primary: {
+        // main: "#0ab9b6",
+        main: "#00D1CD",
+      },
+    },
+  });
 
   {
     /* useEffects */
@@ -188,10 +221,7 @@ export default function MainPanel() {
         { id: "123", name: "ALL" },
         ...classesResponse.data.map((name) => ({
           id: i++,
-          name: name
-            .replaceAll("_", " ")
-            .toLowerCase()
-            .replace(/(?:^|\s)\S/g, (match) => match.toUpperCase()), // Kapitalizacja pierwszej litery lub pierwszej po spacji
+          name: name,
         })),
       ]);
       setClassesList([
@@ -202,26 +232,152 @@ export default function MainPanel() {
     }
   };
 
+  const createParameters = (params) => {
+    departureAirportList.forEach((airport) => {
+      params.append("departureAirportIdList", airport.value.id);
+    });
+
+    arrivalAirportList.forEach((airport) => {
+      params.append("arrivalAirportIdList", airport.value.id);
+    });
+
+    if (selectedDepartureDate !== null) {
+      const correctedDate = new Date(selectedDepartureDate);
+      correctedDate.setDate(correctedDate.getDate() + 1); // Add 1 day
+
+      params.append("departureDate", correctedDate.toISOString().split("T")[0]);
+    }
+
+    airlinesList
+      .filter((airline) => airline.key !== "123")
+      .forEach((airline) => {
+        params.append("airlinesIdList", airline.value.id);
+      });
+
+    classesList
+      .filter((clazz) => clazz.key !== "123")
+      .forEach((clazz) => {
+        params.append("classesList", clazz.value.name);
+      });
+
+    if (priceValue[0] > 0) {
+      params.append("minPrice", priceValue[0]);
+    }
+    if (priceValue[1] < 15000) {
+      params.append("maxPrice", priceValue[1]);
+    }
+
+    function formatHourToIsoString(hour) {
+      const date = new Date();
+      date.setHours(hour + 1, 0, 0, 0);
+      return date.toISOString().split("T")[1].split(".")[0];
+    }
+
+    if (hourDepartureValue[0] > 0) {
+      params.append(
+        "departureTimeStart",
+        formatHourToIsoString(hourDepartureValue[0])
+      );
+    }
+    if (hourDepartureValue[1] < 24) {
+      params.append(
+        "departureTimeEnd",
+        formatHourToIsoString(hourDepartureValue[1])
+      );
+    }
+
+    if (hourArrivalValue[0] > 0) {
+      params.append(
+        "arrivalTimeStart",
+        formatHourToIsoString(hourArrivalValue[0])
+      );
+    }
+    if (hourArrivalValue[1] < 24) {
+      params.append(
+        "arrivalTimeEnd",
+        formatHourToIsoString(hourArrivalValue[1])
+      );
+    }
+
+    selectedDays.forEach((day) => {
+      params.append("departureDays", day);
+    });
+
+    if (tripTimeValue < 60) {
+      params.append("tripTime", tripTimeValue);
+    }
+
+    const sorters = [
+      sortByPrice,
+      sortByTripTime,
+      sortByDepartureTime,
+      sortByArrivalTime,
+      sortByTripTimeReturn,
+      sortByDepartureTimeReturn,
+      sortByArrivalTimeReturn,
+    ];
+
+    sorters.forEach((sorter) => {
+      // if (!sorter) {
+      params.append("sortersList", sorter);
+      // }
+    });
+
+    if (stops) {
+      params.append("stopNumber", stops.replaceAll(" ", "_"));
+    }
+
+    return params;
+  };
+
   const handleSearch = async (page) => {
-    const params = new URLSearchParams({
+    const paramsStart = new URLSearchParams({
       page: page - 1, // Spring używa indeksu od 0
       size: 5, // Liczba elementów na stronę
-      departureDate:
-        selectedDepartureDate !== null ? selectedDepartureDate : "",
-      airlines: selectedDepartureDate !== "ALL" ? selectedDepartureDate : "",
+      passengersCount: passengersCount,
+      childrenCount: childrenCount,
+      handLuggageCount: handLuggageCount,
+      baggageCount: baggageCount,
     });
 
-    departureAirportList.forEach((airport) => {
-      params.append("airportIdDTOList", airport.value.id);
-    });
+    const params = createParameters(paramsStart);
 
+    // Wysłanie zapytania
     const [flightsResponse] = await Promise.all([
       getRequestWithParams("api/getAllFlights", { params }),
     ]);
 
-    // Zaktualizowanie danych dla airportów
+    // const flightsResponseMappedToRelationalFlights = response.data.content.map(
+    //   (flight) => ({
+    //     ...flight,
+    //     relationalFlights: flight.relationalFlights
+    //       ? [...flight.relationalFlights]
+    //       : [],
+    //   })
+    // );
+    // // const relationalFlights3 = flightsResponse1.map(
+    // //   (flight) => flight.relationalFlights
+    // // );
+    // setRelationalFlights(flightsResponseMappedToRelationalFlights);
     setFlights(flightsResponse.data.content);
     setTotalPages(flightsResponse.data.totalPages);
+  };
+
+  const saveFavourites = async () => {
+    const paramsStart = new URLSearchParams({
+      passengersCount: passengersCount,
+      childrenCount: childrenCount,
+      infantsCount: infantsCount,
+      handLuggageCount: handLuggageCount,
+      baggageCount: baggageCount,
+    });
+
+    const params = createParameters(paramsStart);
+
+    // Wysłanie zapytania
+    const [favourititesResponse] = await Promise.all([
+      postRequestWithParams("api/addFavourite", { params }),
+    ]);
   };
 
   const handleChangeSelectedReturnDays = (day, event) => {
@@ -255,7 +411,12 @@ export default function MainPanel() {
   {
     /* Renders */
   }
-  const RenderTimeSlider = (tripTimeValue, setTripTimeValue) => (
+  const RenderTimeSlider = (
+    tripTimeValue,
+    setTripTimeValue,
+    sortByTripTime,
+    setSortByTripTime
+  ) => (
     <>
       {/* Trip Time */}
       <div className="col-md-3 mt-2">
@@ -264,6 +425,8 @@ export default function MainPanel() {
             label="Trip time"
             value={tripTimeValue}
             setValue={setTripTimeValue}
+            sortByTripTime={sortByTripTime}
+            setSortByTripTime={setSortByTripTime}
           />
         </div>
       </div>
@@ -273,14 +436,31 @@ export default function MainPanel() {
   const RenderDepartureDays = (selectedDays, handleChangeCheckedDays) => (
     <>
       {/* Departure Days */}
-      <div className="col-md-3 mt-2 px-2">
+      <div
+        className="col-md-3 mt-2 px-0"
+        style={{
+          paddingLeft: "2px !important",
+          paddingRight: "0px !important",
+        }}
+      >
         <div className="col mt-3">
           <Form.Label>Departure Days:</Form.Label>
           <br />
-          {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => (
+          {[
+            "MONDAY",
+            "TUESDAY",
+            "WEDNESDAY",
+            "THURSDAY",
+            "FRIDAY",
+            "SATURDAY",
+            "SUNDAY",
+          ].map((day) => (
             <CustomCheckbox
               key={day}
-              label={day}
+              label={
+                day.substring(0, 1).toUpperCase() +
+                day.substring(1, 3).toLowerCase()
+              }
               checked={selectedDays.includes(day)}
               handleChange={(event) => handleChangeCheckedDays(day, event)}
             />
@@ -295,6 +475,10 @@ export default function MainPanel() {
     setDepartureValue,
     arrivalValue,
     setArrivalValue,
+    sortByDepartureTime,
+    setSortByDepartureTime,
+    sortByArrivalTime,
+    setSortByArrivalTime,
     margin = "col-md-3 mt-2"
   ) => (
     <>
@@ -305,6 +489,8 @@ export default function MainPanel() {
             label="Departure"
             value={departureValue}
             setValue={setDepartureValue}
+            sortByTime={sortByDepartureTime}
+            setSortByTime={setSortByDepartureTime}
           />
         </div>
       </div>
@@ -316,6 +502,8 @@ export default function MainPanel() {
             label="Arrival"
             value={arrivalValue}
             setValue={setArrivalValue}
+            sortByTime={sortByArrivalTime}
+            setSortByTime={setSortByArrivalTime}
           />
         </div>
       </div>
@@ -353,8 +541,25 @@ export default function MainPanel() {
             <Row className="align-items-center">
               {/* Title and Description */}
               <Col md="auto">
-                <h1>Aero Compare</h1>
-                <p>Your personal airline ticket comparator</p>
+                <div
+                  style={{
+                    width: "300px",
+                    height: "150px",
+                    overflow: "hidden",
+                  }}
+                >
+                  <img
+                    src={AeroCompareLogo1}
+                    alt="Aero Compare Logo"
+                    style={{
+                      // transform: "scale(1.5) translateY(-10%)",
+                      width: "100%",
+                      height: "auto",
+                    }}
+                  />
+                </div>
+                {/* <h1>Aero Compare</h1>
+                <p>Your personal airline ticket comparator</p> */}
               </Col>
 
               {/* Options for trip type, passengers, and baggage */}
@@ -369,17 +574,49 @@ export default function MainPanel() {
                       >
                         <Button
                           onClick={() => setTripType("one-way")}
-                          variant={
-                            tripType === "one-way" ? "primary" : "secondary"
-                          }
+                          style={{
+                            backgroundColor:
+                              tripType === "one-way" ? "#00D1CD" : "#808080", // Tło
+                            color: "#fff", // Kolor tekstu
+                            fontWeight: "bold", // Pogrubienie tekstu
+                            border: `2px solid ${
+                              tripType === "one-way" ? "#00D1CD" : "#808080"
+                            }`, // Obramowanie w tym samym kolorze
+                            boxShadow: `0 4px 8px rgba(0, 0, 0, 0.2)`, // Efekt cienia
+                            borderTopLeftRadius: "7px", // Zaokrąglenie tylko lewego górnego rogu
+                            borderBottomLeftRadius: "7px", // Zaokrąglenie tylko lewego dolnego rogu
+                            transition: "all 0.3s ease", // Płynna zmiana dla efektów hover
+                          }}
+                          onMouseOver={(e) =>
+                            (e.currentTarget.style.boxShadow = `0 6px 12px rgba(0, 0, 0, 0.3)`)
+                          } // Cień przy najechaniu
+                          onMouseOut={(e) =>
+                            (e.currentTarget.style.boxShadow = `0 4px 8px rgba(0, 0, 0, 0.2)`)
+                          } // Przywrócenie cienia
                         >
                           ONE-WAY
                         </Button>
                         <Button
                           onClick={() => setTripType("return")}
-                          variant={
-                            tripType === "return" ? "primary" : "secondary"
-                          }
+                          style={{
+                            backgroundColor:
+                              tripType === "return" ? "#00D1CD" : "#808080", // Tło
+                            color: "#fff", // Kolor tekstu
+                            fontWeight: "bold", // Pogrubienie tekstu
+                            border: `2px solid ${
+                              tripType === "return" ? "#00D1CD" : "#808080"
+                            }`, // Obramowanie w tym samym kolorze
+                            boxShadow: `0 4px 8px rgba(0, 0, 0, 0.2)`, // Efekt cienia
+                            borderTopRightRadius: "7px", // Zaokrąglenie tylko prawego górnego rogu
+                            borderBottomRightRadius: "7px", // Zaokrąglenie tylko prawego dolnego rogu
+                            transition: "all 0.3s ease", // Płynna zmiana dla efektów hover
+                          }}
+                          onMouseOver={(e) =>
+                            (e.currentTarget.style.boxShadow = `0 6px 12px rgba(0, 0, 0, 0.3)`)
+                          } // Cień przy najechaniu
+                          onMouseOut={(e) =>
+                            (e.currentTarget.style.boxShadow = `0 4px 8px rgba(0, 0, 0, 0.2)`)
+                          } // Przywrócenie cienia
                         >
                           RETURN
                         </Button>
@@ -398,6 +635,11 @@ export default function MainPanel() {
                           variant="contained"
                           color="success"
                           onClick={() => handleSearch(currentPage)}
+                          style={{
+                            fontSize: "16px",
+                            fontFamily:
+                              "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+                          }}
                         >
                           Search
                         </ButtonMaterial>
@@ -410,9 +652,24 @@ export default function MainPanel() {
                         variant="primary"
                         onClick={() => setShowModal(true)}
                         className="d-flex align-items-center"
+                        style={{
+                          backgroundColor: "#00D1CD", // Tło
+                          color: "#fff", // Kolor tekstu
+                          fontWeight: "bold", // Pogrubienie tekstu
+                          border: "2px solid #00D1CD",
+                          boxShadow: `0 4px 8px rgba(0, 0, 0, 0.2)`, // Efekt cienia
+                          borderRadius: "7px", // Zaokrąglenie przycisku
+                          transition: "all 0.3s ease", // Płynna zmiana dla efektów hover
+                        }}
+                        onMouseOver={(e) =>
+                          (e.currentTarget.style.boxShadow = `0 6px 12px rgba(0, 0, 0, 0.3)`)
+                        } // Cień przy najechaniu
+                        onMouseOut={(e) =>
+                          (e.currentTarget.style.boxShadow = `0 4px 8px rgba(0, 0, 0, 0.2)`)
+                        } // Przywrócenie cienia
                       >
                         <BsFillPeopleFill /> {"\u00A0"}
-                        {passengersCount + childrensCount + infantsCount}
+                        {passengersCount + childrenCount + infantsCount}
                         {"\u00A0\u00A0\u00A0" /* Spacing between icons */}
                         <BsFillLuggageFill /> {"\u00A0"}
                         {handLuggageCount + baggageCount}
@@ -428,8 +685,8 @@ export default function MainPanel() {
                     onHide={() => setShowModal(false)}
                     passengersCount={passengersCount}
                     setPassengersCount={setPassengersCount}
-                    childrensCount={childrensCount}
-                    setChildrensCount={setChildrensCount}
+                    childrenCount={childrenCount}
+                    setChildrenCount={setChildrenCount}
                     infantsCount={infantsCount}
                     setInfantsCount={setInfantsCount}
                     handLuggageCount={handLuggageCount}
@@ -457,14 +714,15 @@ export default function MainPanel() {
                   />
 
                   {/* Arrival Airport */}
-                  {tripType === "return" && (
-                    <AirportSelect
-                      label="Arrival"
-                      airport={arrivalAirport}
-                      airportList={arrivalAirportList}
-                      setAirportList={setArrivalAirportList}
-                    />
-                  )}
+                  <AirportSelect
+                    label="Arrival"
+                    className={
+                      tripType === "one-way" ? "col-md-4 mt-2" : "col-md-3 mt-2"
+                    }
+                    airport={arrivalAirport}
+                    airportList={arrivalAirportList}
+                    setAirportList={setArrivalAirportList}
+                  />
 
                   {/* Departure Date */}
                   <DatePicker
@@ -513,10 +771,33 @@ export default function MainPanel() {
                   <Typography
                     variant="h5"
                     // sx={{fontWeight: "bold" }}
+                    sx={{
+                      // fontWeight: "bold",
+                      fontFamily:
+                        "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif", // Ustawiamy font-family
+                      marginRight: "10px",
+                    }}
                   >
                     More Filters
                   </Typography>
+                  {/* Przycisk <3 na prawo, na tej samej wysokości co More Filters */}
+                  <Button
+                    variant="text"
+                    onClick={(e) => {
+                      e.stopPropagation(); // Zatrzymanie propagacji kliknięcia, aby nie wpłynęło na Accordion
+                      saveFavourites();
+                    }}
+                    style={{
+                      // position: "absolute", // Ustawienie absolutne, żeby przycisk nie wpływał na układ
+                      right: "10%", // Przesunięcie przycisku na prawo
+                      top: "50%", // Ustawienie przycisku na środku wysokości
+                      color: "#00D1CD",
+                    }}
+                  >
+                    <FavoriteBorderIcon />
+                  </Button>
                 </AccordionSummary>
+
                 <AccordionDetails
                   sx={{ paddingTop: "0px", borderTop: "1px solid darkgray" }}
                 >
@@ -553,6 +834,8 @@ export default function MainPanel() {
                             value={priceValue}
                             setValue={setPriceValue}
                             valuetext={(value) => `${value} PLN`}
+                            sortByPrice={sortByPrice}
+                            setSortByPrice={setSortByPrice}
                           />
                         </div>
                       </div>
@@ -586,7 +869,11 @@ export default function MainPanel() {
                                   hourDepartureValue,
                                   setHourDepartureValue,
                                   hourArrivalValue,
-                                  setHourArrivalValue
+                                  setHourArrivalValue,
+                                  sortByDepartureTime,
+                                  setSortByDepartureTime,
+                                  sortByArrivalTime,
+                                  setSortByArrivalTime
                                 )}
                                 {RenderDepartureDays(
                                   selectedDays,
@@ -594,7 +881,9 @@ export default function MainPanel() {
                                 )}
                                 {RenderTimeSlider(
                                   tripTimeValue,
-                                  setTripTimeValue
+                                  setTripTimeValue,
+                                  sortByTripTime,
+                                  setSortByTripTime
                                 )}
                               </div>
                             </TabPanel>
@@ -606,7 +895,11 @@ export default function MainPanel() {
                                   hourDepartureReturnValue,
                                   setHourDepartureReturnValue,
                                   hourArrivalReturnValue,
-                                  setHourArrivalReturnValue
+                                  setHourArrivalReturnValue,
+                                  sortByDepartureTimeReturn,
+                                  setSortByDepartureTimeReturn,
+                                  sortByArrivalTimeReturn,
+                                  setSortByArrivalTimeReturn
                                 )}
                                 {RenderDepartureDays(
                                   selectedReturnDays,
@@ -614,7 +907,9 @@ export default function MainPanel() {
                                 )}
                                 {RenderTimeSlider(
                                   tripTimeReturnValue,
-                                  setTripTimeReturnValue
+                                  setTripTimeReturnValue,
+                                  sortByTripTimeReturn,
+                                  setSortByTripTimeReturn
                                 )}
                               </div>
                             </TabPanel>
@@ -627,13 +922,22 @@ export default function MainPanel() {
                               hourDepartureValue,
                               setHourDepartureValue,
                               hourArrivalValue,
-                              setHourArrivalValue
+                              setHourArrivalValue,
+                              sortByDepartureTime,
+                              setSortByDepartureTime,
+                              sortByArrivalTime,
+                              setSortByArrivalTime
                             )}
                             {RenderDepartureDays(
                               selectedDays,
                               handleChangeSelectedDays
                             )}
-                            {RenderTimeSlider(tripTimeValue, setTripTimeValue)}
+                            {RenderTimeSlider(
+                              tripTimeValue,
+                              setTripTimeValue,
+                              sortByTripTime,
+                              setSortByTripTime
+                            )}
                           </div>
                         </>
                       )}
@@ -677,7 +981,7 @@ export default function MainPanel() {
                     key={flight.id}
                     flight={flight}
                     adults={passengersCount}
-                    childrens={childrensCount}
+                    children={childrenCount}
                     infants={infantsCount}
                     handLuggage={handLuggageCount}
                     baggage={baggageCount}
@@ -723,6 +1027,21 @@ export default function MainPanel() {
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
+            }}
+            sx={{
+              "& .MuiPaginationItem-text": {
+                color: "#00D1CD",
+              },
+              "& .MuiPaginationItem-previousNext": {
+                color: "#00D1CD", // Kolor strzałek previous i next
+              },
+              "& .MuiPaginationItem-page": {
+                color: "#00D1CD", // Kolor tekstu numeru strony
+              },
+              "& .MuiPaginationItem-page.Mui-selected": {
+                backgroundColor: "#00D1CD", // Kolor tła numeru strony w wybranym stanie
+                color: "white", // Kolor tekstu dla wybranego numeru strony
+              },
             }}
           />
         </div>

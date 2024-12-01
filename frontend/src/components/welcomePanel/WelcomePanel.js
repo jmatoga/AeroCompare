@@ -74,8 +74,23 @@ export default function WelcomePanel() {
             const servicesSection = document.getElementById("services");
             servicesSection.scrollIntoView({ behavior: "smooth" });
           }}
+          style={{
+            backgroundColor: "#00D1CD", // Tło
+            color: "#fff", // Kolor tekstu
+            fontWeight: "bold", // Pogrubienie tekstu
+            border: "2px solid #00D1CD",
+            boxShadow: `0 4px 8px rgba(0, 0, 0, 0.2)`, // Efekt cienia
+            borderRadius: "7px", // Zaokrąglenie przycisku
+            transition: "all 0.3s ease", // Płynna zmiana dla efektów hover
+          }}
+          onMouseOver={(e) =>
+            (e.currentTarget.style.boxShadow = `0 6px 12px rgba(0, 0, 0, 0.3)`)
+          } // Cień przy najechaniu
+          onMouseOut={(e) =>
+            (e.currentTarget.style.boxShadow = `0 4px 8px rgba(0, 0, 0, 0.2)`)
+          } // Przywrócenie cienia
         >
-          Get Started
+          Start Aero Comparing
         </Button>
       </Container>
 
@@ -91,7 +106,9 @@ export default function WelcomePanel() {
                   ? "scale(1.8) translateY(-120px)"
                   : "scale(1) translateY(0)",
                 transition: "transform 0.3s ease",
-                backgroundColor: "rgba(10, 77, 138, 0.8)",
+                // backgroundColor: "rgba(10, 77, 138, 0.8)",
+                backgroundColor: "rgba(0, 209, 205, 0.8)",
+
                 color: "white",
               }}
             >
@@ -117,7 +134,9 @@ export default function WelcomePanel() {
                   ? "scale(1.8) translateY(-120px)"
                   : "scale(1) translateY(0)",
                 transition: "transform 0.3s ease",
-                background: "linear-gradient(135deg, #0a4d8a, #5ca2d8)",
+                // background: "linear-gradient(135deg, #0a4d8a, #5ca2d8)",
+                background: "linear-gradient(135deg, #00AFAE, #00D1CD)",
+
                 color: "white",
               }}
             >
@@ -144,7 +163,9 @@ export default function WelcomePanel() {
                   ? "scale(1.8) translateY(-120px)"
                   : "scale(1) translateY(0)",
                 transition: "transform 0.3s ease",
-                background: "linear-gradient(135deg, #0066cc, #66b3ff)",
+                // background: "linear-gradient(135deg, #0066cc, #66b3ff)",
+                background: "linear-gradient(135deg, #009C99, #33E6E4)",
+
                 color: "white",
               }}
             >

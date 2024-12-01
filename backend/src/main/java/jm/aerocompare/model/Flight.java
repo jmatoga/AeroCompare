@@ -37,9 +37,8 @@ public class Flight {
     private Integer priceForChild;
     private Integer priceForHandLuggage;
     private Integer priceForCheckedLuggage;
-    private Integer durationHours;
-    private Integer durationMinutes;
     private Integer seatsLeft;
+    private String bookingLink;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "class")

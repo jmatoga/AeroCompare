@@ -22,7 +22,10 @@ export default function MultiChoice({
               !entitiesList.some((selected) => selected.key === entity.id)
           )
           .map((entity) => ({
-            label: entity.name,
+            label: entity.name
+              .replaceAll("_", " ")
+              .toLowerCase()
+              .replace(/(?:^|\s)\S/g, (match) => match.toUpperCase()), // Kapitalizacja pierwszej litery lub pierwszej po spacji,
             value: entity,
             key: entity.id,
           }))}
