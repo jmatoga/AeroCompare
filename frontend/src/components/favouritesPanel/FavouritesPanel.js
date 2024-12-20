@@ -10,14 +10,14 @@ import {
   InputGroup,
 } from "react-bootstrap";
 // import Select from "react-select";
-import { getRequest, getRequestWithParams } from "../axios_helper";
-import PassengersModal from "./PassengersModal";
-import MultiChoice from "./MultiChoice";
+import { getRequest, getRequestWithParams } from "../axios_helper.js";
+import PassengersModal from "../mainPanel/PassengersModal.js";
+import MultiChoice from "../mainPanel/MultiChoice.js";
 import { BsFillPeopleFill, BsFillLuggageFill } from "react-icons/bs";
 import { FaCaretDown } from "react-icons/fa";
-import DatePicker from "./DatePicker";
+import DatePicker from "../mainPanel/DatePicker.js";
 import backgroundImage from "../../resources/2.jpg";
-import Footer from "../footer/Footer";
+import Footer from "../footer/Footer.js";
 import {
   Slider,
   Box,
@@ -31,13 +31,17 @@ import {
   createTheme,
 } from "@mui/material";
 import ButtonMaterial from "@mui/material/Button";
-import { HourSlider, PriceSlider, TripTimeSlider } from "./Slider";
-import CustomCheckbox from "./CustomCheckBox.js";
+import {
+  HourSlider,
+  PriceSlider,
+  TripTimeSlider,
+} from "../mainPanel/Slider.js";
+import CustomCheckbox from "../mainPanel/CustomCheckBox.js";
 import Tab from "@mui/material/Tab";
 import TabContext from "@mui/lab/TabContext";
 import TabList from "@mui/lab/TabList";
 import TabPanel from "@mui/lab/TabPanel";
-import AirportSelect from "./AirportSelect.js";
+import AirportSelect from "../mainPanel/AirportSelect.js";
 import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
@@ -46,13 +50,142 @@ import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
-import FavouriteCard from "./FavouriteCard.js";
+import FavouritesCard from "./FavouritesCard.js";
 import Pagination from "@mui/material/Pagination";
-import SplitButton from "./SplitButton.js";
+import SplitButton from "../mainPanel/SplitButton.js";
 import AeroCompareLogo from "../../resources/aero-compare-high-resolution-logo.png";
 import AeroCompareLogo1 from "../../resources/aero.png";
 
 export default function FavourititesPanel() {
+  {
+    /* Trip Type, Stops, Modal */
+  }
+  const [tripType, setTripType] = useState("one-way");
+  const [stops, setStops] = useState();
+
+  {
+    /* Passengers */
+  }
+  const [passengersCount, setPassengersCount] = useState(1);
+  const [childrenCount, setChildrenCount] = useState(0);
+  const [infantsCount, setInfantsCount] = useState(0);
+
+  {
+    /* Baggage */
+  }
+  const [handLuggageCount, setHandLuggageCount] = useState(0);
+  const [baggageCount, setBaggageCount] = useState(0);
+
+  {
+    /* Airports */
+  }
+  const [departureAirport, setDepartureAirportData] = useState([]);
+  const [arrivalAirport, setArrivalAirportData] = useState([]);
+
+  {
+    /* Date */
+  }
+  const [selectedDepartureDate, setSelectedDepartureDate] = useState(null);
+  const [selectedReturnDate, setSelectedReturnDate] = useState(null);
+
+  {
+    /* Airlines */
+  }
+  const [airlines, setAirlines] = useState([]);
+
+  {
+    /* Classes */
+  }
+  const [classes, setClasses] = useState([]);
+
+  {
+    /* Price */
+  }
+  const [priceValue, setPriceValue] = useState([0, 15000]);
+
+  {
+    /* Time */
+  }
+  const [departureOrReturnValue, setDepartureOrReturnValue] = useState("1");
+
+  const [hourDepartureValue, setHourDepartureValue] = useState([0, 24]);
+  const [hourArrivalValue, setHourArrivalValue] = useState([0, 24]);
+
+  const [hourDepartureReturnValue, setHourDepartureReturnValue] = useState([
+    0, 24,
+  ]);
+  const [hourArrivalReturnValue, setHourArrivalReturnValue] = useState([0, 24]);
+
+  {
+    /* Departure Days */
+  }
+  const [selectedDays, setSelectedDays] = useState([
+    "MONDAY",
+    "TUESDAY",
+    "WEDNESDAY",
+    "THURSDAY",
+    "FRIDAY",
+    "SATURDAY",
+    "SUNDAY",
+  ]);
+
+  const [selectedReturnDays, setSelectedReturnDays] = useState([
+    "MONDAY",
+    "TUESDAY",
+    "WEDNESDAY",
+    "THURSDAY",
+    "FRIDAY",
+    "SATURDAY",
+    "SUNDAY",
+  ]);
+
+  {
+    /* Trip Time */
+  }
+  const [tripTimeValue, setTripTimeValue] = useState(60);
+  const [tripTimeReturnValue, setTripTimeReturnValue] = useState(60);
+
+  {
+    /* Pagination */
+  }
+  const [currentPage, setCurrentPage] = useState(1); // MUI Pagination zaczyna od 1
+  const [totalPages, setTotalPages] = useState(1);
+
+  {
+    /* Sorters */
+  }
+  const [sortByPrice, setSortByPrice] = useState(true);
+  const [sortByTripTime, setSortByTripTime] = useState(true);
+  const [sortByTripTimeReturn, setSortByTripTimeReturn] = useState(true);
+  const [sortByDepartureTime, setSortByDepartureTime] = useState(true);
+  const [sortByDepartureTimeReturn, setSortByDepartureTimeReturn] =
+    useState(true);
+  const [sortByArrivalTime, setSortByArrivalTime] = useState(true);
+  const [sortByArrivalTimeReturn, setSortByArrivalTimeReturn] = useState(true);
+
+  const [favourites, setFavourites] = useState([]);
+
+  const handlePageChange = (event, value) => {
+    setCurrentPage(value);
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const [favouritesResponse] = await Promise.all([
+        getRequest("api/favourites"),
+      ]);
+
+      setFavourites(favouritesResponse.data);
+      console.log(favouritesResponse.data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
   return (
     <div
       style={{
@@ -81,6 +214,33 @@ export default function FavourititesPanel() {
               // transform: "translateX(1.1)", // Zapobiega rozmazywaniu tekstu
             }}
           >
+            <Row className="align-items-center">
+              {/* Title and Description */}
+              <Col md="auto">
+                <div
+                  style={{
+                    width: "300px",
+                    height: "150px",
+                    overflow: "hidden",
+                  }}
+                >
+                  <img
+                    src={AeroCompareLogo1}
+                    alt="Aero Compare Logo"
+                    style={{
+                      // transform: "scale(1.5) translateY(-10%)",
+                      width: "100%",
+                      height: "auto",
+                    }}
+                  />
+                </div>
+              </Col>
+              <Col md="auto">
+                <Typography variant="h2" className="mb-4">
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Favourites
+                </Typography>
+              </Col>
+            </Row>
             {/* Lista wyników porównania */}
             <ListGroup
               className="mb-4"
@@ -106,21 +266,13 @@ export default function FavourititesPanel() {
                     overflow: "hidden",
                     display: "flex", // Wymaga, aby kontener był flex
                     flexDirection: "column", // Ustawia elementy w kolumnie
-                    gap: "10px", // Daje odstęp pomiędzy elementami
+                    gap: "-20px", // Daje odstęp pomiędzy elementami
                   }}
                 >
-                  {flights.map((flight) => (
-                    <FavouriteCard
-                      key={flight.id}
-                      flight={flight}
-                      adults={passengersCount}
-                      children={childrenCount}
-                      infants={infantsCount}
-                      handLuggage={handLuggageCount}
-                      baggage={baggageCount}
-                    />
+                  {favourites.map((favourite) => (
+                    <FavouritesCard key={favourite.id} favourite={favourite} />
                   ))}
-                  {flights.length === 0 && (
+                  {favourites.length === 0 && (
                     <Box
                       display="flex"
                       justifyContent="center"
@@ -128,7 +280,7 @@ export default function FavourititesPanel() {
                       height="200px"
                     >
                       <Typography variant="h3" align="center">
-                        No results for the selected filters
+                        No favourites found
                       </Typography>
                     </Box>
                   )}

@@ -15,9 +15,11 @@ import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import UserPanel from "./components/userPanel/UserPanel";
 import MainPanel from "./components/mainPanel/MainPanel";
+import FavouritesPanel from "./components/favouritesPanel/FavouritesPanel";
 import RegisterPanel from "./components/registerPanel/RegisterPanel";
 import AdminPanel from "./components/adminPanel/AdminPanel";
 import { createTheme, ThemeProvider } from "@mui/material";
+import HistoryPanel from "./components/historyPanel/HistoryPanel";
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(!!Cookies.get("accessToken"));
@@ -66,6 +68,18 @@ export default function App() {
                 path="/"
                 element={
                   isLoggedIn ? <MainPanel /> : <Navigate to="/welcome" />
+                }
+              />
+              <Route
+                path="/favourites"
+                element={
+                  isLoggedIn ? <FavouritesPanel /> : <Navigate to="/welcome" />
+                }
+              />
+              <Route
+                path="/history"
+                element={
+                  isLoggedIn ? <HistoryPanel /> : <Navigate to="/welcome" />
                 }
               />
               <Route

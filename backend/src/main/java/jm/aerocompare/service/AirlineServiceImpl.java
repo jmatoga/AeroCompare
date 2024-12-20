@@ -1,5 +1,6 @@
 package jm.aerocompare.service;
 
+import jakarta.transaction.Transactional;
 import jm.aerocompare.dto.AirlineDTO;
 import jm.aerocompare.mapper.AirlineMapper;
 import jm.aerocompare.repository.AirlineRepository;
@@ -23,5 +24,16 @@ public class AirlineServiceImpl implements AirlineService {
     @Override
     public AirlineDTO getAirlineByAirplaneId(UUID airplaneId) {
         return airlineMapper.mapToAirlineDTO(airlineRepository.findByAirplaneId(airplaneId));
+    }
+
+    @Override
+    public void addNewAirlines(List<AirlineDTO> airlines) {
+        airlineRepository.saveAll(airlineMapper.mapToAirlines(airlines));
+    }
+
+    @Override
+    @Transactional
+    public void deleteAirlines(List<UUID> airlinesToDelete) {
+        airlineRepository.deleteAllById(airlinesToDelete);
     }
 }

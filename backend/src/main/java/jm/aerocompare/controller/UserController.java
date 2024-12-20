@@ -6,10 +6,8 @@ import jm.aerocompare.exception.CurrentUserNotAuthenticatedException;
 import jm.aerocompare.mapper.UserMapper;
 import jm.aerocompare.model.ERole;
 import jm.aerocompare.model.User;
-import jm.aerocompare.security.payload.response.MessageResponse;
 import jm.aerocompare.service.UserService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +17,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
-@Log4j2
 public class UserController {
     private final UserService userService;
     private final UserMapper userMapper;
@@ -30,18 +27,17 @@ public class UserController {
     }
 
     @GetMapping("/currentUser")
-    @PreAuthorize("hasRole('ROLE_USER')" + "or hasRole('ROLE_MODERATOR')" + "or hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_USER')" + "or hasRole('ROLE_ADMIN')")
     ResponseEntity<UserDTO> getCurrentUser() throws CurrentUserNotAuthenticatedException {
         User currentUser = userService.getCurrentUser();
-        UserDTO dto = userMapper.mapToUserDTO(userService.getUserById(currentUser.getId()));
-        return ResponseEntity.ok(dto);
+        return ResponseEntity.ok(userMapper.mapToUserDTO(userService.getUserById(currentUser.getId())));
     }
 
     @PutMapping("/userDetails")
-    @PreAuthorize("hasRole('ROLE_USER')" + "or hasRole('ROLE_MODERATOR')" + "or hasRole('ROLE_ADMIN')")
-    ResponseEntity<MessageResponse> updateUserDetails(@RequestBody UserDetailsDTO userDTO) throws CurrentUserNotAuthenticatedException {
+    @PreAuthorize("hasRole('ROLE_USER')" + "or hasRole('ROLE_ADMIN')")
+    ResponseEntity<String> updateUserDetails(@RequestBody UserDetailsDTO userDTO) throws CurrentUserNotAuthenticatedException {
         userService.updateUserDetails(userDTO);
-        return ResponseEntity.ok(new MessageResponse("User details updated successfully!"));
+        return ResponseEntity.ok("User details updated successfully!");
     }
 
     @GetMapping("/currentUserRole")

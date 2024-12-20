@@ -19,13 +19,13 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 @Service
 @AllArgsConstructor
 public class FlightServiceImpl implements FlightService {
     private final FlightRepository flightRepository;
     private final FlightMapper flightMapper;
+    private final HistoryService historyService;
 
     @Override
     public Page<FlightDTO> getDirectFlights(int page, int size, List<Boolean> sortersList, List<UUID> departureAirportIdList, List<UUID> arrivalAirportIdList, LocalDate departureDate, List<EClass> classesList, List<UUID> airlinesIdList, Integer minPrice, Integer maxPrice, LocalTime departureTimeStart, LocalTime departureTimeEnd, LocalTime arrivalTimeStart, LocalTime arrivalTimeEnd, List<DayOfWeek> departureDays, Integer tripTime, Integer passengersCount, Integer childrenCount, Integer handLuggageCount, Integer baggageCount) {
@@ -35,30 +35,20 @@ public class FlightServiceImpl implements FlightService {
         // Too complicated to use in SQL query
         List<Flight> sortedFlights = filterListOfFlights(directFlightsWithSimpleFilters, sortersList, departureDate, departureTimeStart, departureTimeEnd, arrivalTimeStart, arrivalTimeEnd, departureDays, tripTime, passengersCount, childrenCount, handLuggageCount, baggageCount);
 
-        List<FlightDTO> content = getContentFlights(page, size, sortedFlights);
+        int start = Math.min(page * size, sortedFlights.size());
+        int end = Math.min((page + 1) * size, sortedFlights.size());
+        List<FlightDTO> content = sortedFlights.subList(start, end)
+                                          .stream()
+                                          .map(flightMapper::mapToFlightDTO)
+                                          .toList();
+
+        //historyService.addToHistory(new HistoryDTO());
 
         return new PageImpl<>(content, PageRequest.of(page, size), sortedFlights.size());
     }
 
     @Override
     public Page<FlightDTO> getDirectAndUpTo1Flights(int page, int size, List<Boolean> sortersList, List<UUID> departureAirportIdList, List<UUID> arrivalAirportIdList, LocalDate departureDate, List<EClass> classesList, List<UUID> airlinesIdList, Integer minPrice, Integer maxPrice, LocalTime departureTimeStart, LocalTime departureTimeEnd, LocalTime arrivalTimeStart, LocalTime arrivalTimeEnd, List<DayOfWeek> departureDays, Integer tripTime, Integer passengersCount, Integer childrenCount, Integer handLuggageCount, Integer baggageCount) {
-        List<Flight> directFlightsContent = getDirectFlightsContent(departureAirportIdList, arrivalAirportIdList, classesList, airlinesIdList, minPrice, maxPrice, sortersList,
-                departureDate, departureTimeStart, departureTimeEnd, arrivalTimeStart, arrivalTimeEnd, departureDays, tripTime, passengersCount, childrenCount, handLuggageCount, baggageCount);
-
-        List<FlightDTO> directFlightsContentMapped = directFlightsContent.stream()
-                                                             .map(flight -> flightMapper.mapToFlightDTO(flight, new ArrayList<>()))
-                                                             .toList();
-
-        List<FlightDTO> upTo1FlightsContent = getUpTo1StopFlightsContent(sortersList, departureAirportIdList, arrivalAirportIdList, departureDate, classesList, airlinesIdList, minPrice, maxPrice, departureTimeStart, departureTimeEnd, arrivalTimeStart, arrivalTimeEnd, departureDays, tripTime, passengersCount, childrenCount, handLuggageCount, baggageCount);
-        // TODO REFACTOR
-        List<FlightDTO> allFlights = Stream.concat(directFlightsContentMapped.stream(), upTo1FlightsContent.stream())
-                                             .distinct()
-                                             .toList();
-
-        return new PageImpl<>(getContentRelationalFlights(page, size, upTo1FlightsContent), PageRequest.of(page, size), upTo1FlightsContent.size());
-    }
-
-    private List<FlightDTO> getUpTo1StopFlightsContent(List<Boolean> sortersList, List<UUID> departureAirportIdList, List<UUID> arrivalAirportIdList, LocalDate departureDate, List<EClass> classesList, List<UUID> airlinesIdList, Integer minPrice, Integer maxPrice, LocalTime departureTimeStart, LocalTime departureTimeEnd, LocalTime arrivalTimeStart, LocalTime arrivalTimeEnd, List<DayOfWeek> departureDays, Integer tripTime, Integer passengersCount, Integer childrenCount, Integer handLuggageCount, Integer baggageCount) {
         List<Flight> flightsFrom1StopWithSimpleFilters = flightRepository.flightsFrom1StopWithSimpleFilters(departureAirportIdList, classesList, airlinesIdList, passengersCount, childrenCount);
         List<FlightDTO> flightsFrom1StopFiltered = new ArrayList<>();
 
@@ -75,33 +65,14 @@ public class FlightServiceImpl implements FlightService {
             flightsFrom1StopFiltered.add(flightMapper.mapToFlightDTO(flight, flightsTo1Stop));
         });
 
-        return filterListOfRelationalFlights(flightsFrom1StopFiltered, sortersList, departureDate, minPrice, maxPrice, departureTimeStart, departureTimeEnd, arrivalTimeStart, arrivalTimeEnd, departureDays, tripTime, passengersCount, childrenCount, handLuggageCount, baggageCount);
-    }
+        List<FlightDTO> upTo1FlightsContent = filterListOfRelationalFlights(flightsFrom1StopFiltered, sortersList, departureDate, minPrice, maxPrice, departureTimeStart, departureTimeEnd, arrivalTimeStart, arrivalTimeEnd, departureDays, tripTime, passengersCount, childrenCount, handLuggageCount, baggageCount);
 
-    private List<Flight> getDirectFlightsContent(List<UUID> departureAirportIdList, List<UUID> arrivalAirportIdList, List<EClass> classesList, List<UUID> airlinesIdList, Integer minPrice, Integer maxPrice, List<Boolean> sortersList,
-                                                 LocalDate departureDate, LocalTime departureTimeStart, LocalTime departureTimeEnd,
-                                                 LocalTime arrivalTimeStart, LocalTime arrivalTimeEnd, List<DayOfWeek> departureDays,
-                                                 Integer tripTime, Integer passengersCount, Integer childrenCount, Integer handLuggageCount, Integer baggageCount) {
-        List<Flight> directFlightsWithSimpleFilters = flightRepository.findFlightBySimpleFilters(departureAirportIdList, arrivalAirportIdList, classesList,
-                airlinesIdList, minPrice, maxPrice, passengersCount, childrenCount, handLuggageCount, baggageCount);
+        int start = Math.min(page * size, upTo1FlightsContent.size());
+        int end = Math.min((page + 1) * size, upTo1FlightsContent.size());
 
-        // Too complicated to use in SQL query
-        return filterListOfFlights(directFlightsWithSimpleFilters, sortersList, departureDate, departureTimeStart, departureTimeEnd, arrivalTimeStart, arrivalTimeEnd, departureDays, tripTime, passengersCount, childrenCount, handLuggageCount, baggageCount);
-    }
+        //historyService.addToHistory(new HistoryDTO());
 
-    private List<FlightDTO> getContentFlights(int page, int size, List<Flight> sortedFlights) {
-        int start = Math.min(page * size, sortedFlights.size());
-        int end = Math.min((page + 1) * size, sortedFlights.size());
-        return sortedFlights.subList(start, end)
-                       .stream()
-                       .map(flightMapper::mapToFlightDTO)
-                       .toList();
-    }
-
-    private List<FlightDTO> getContentRelationalFlights(int page, int size, List<FlightDTO> sortedFlights) {
-        int start = Math.min(page * size, sortedFlights.size());
-        int end = Math.min((page + 1) * size, sortedFlights.size());
-        return sortedFlights.subList(start, end);
+        return new PageImpl<>(upTo1FlightsContent.subList(start, end), PageRequest.of(page, size), upTo1FlightsContent.size());
     }
 
     private static List<Flight> filterListOfFlights(List<Flight> flightsWithSimpleFilters, List<Boolean> sortersList, LocalDate departureDate, LocalTime departureTimeStart, LocalTime departureTimeEnd, LocalTime arrivalTimeStart, LocalTime arrivalTimeEnd, List<DayOfWeek> departureDays, Integer tripTime, Integer passengersCount, Integer childrenCount, Integer handLuggageCount, Integer baggageCount) {

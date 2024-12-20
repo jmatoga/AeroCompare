@@ -20,7 +20,7 @@ export default function AdminPanel() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    postRequest("api/addNewAirplane", planeData).then((response) => {
+    postRequest("api/airplane", planeData).then((response) => {
       alert(
         `Samolot: ${planeData.model} - ${planeData.manufacturer} - ${planeData.yearManufactured}r. dodany pomyślnie!`
       );

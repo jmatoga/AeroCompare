@@ -3,10 +3,10 @@ package jm.aerocompare.security;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import lombok.extern.java.Log;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import jm.aerocompare.configuration.PropertiesConfig;
 import jm.aerocompare.security.payload.LoginAttempt;
+import lombok.NonNull;
+import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -14,31 +14,26 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 @Service
-@Log
 public class LoginAttemptService {
-
-    @Value("${aerocompare.app.max-attempts}")
-    private Integer maxAttempt;
-
-    @Value("${aerocompare.app.login-locker-in-min}")
-    private Long loginLockerInMin;
-
+    private final Integer maxAttempt;
+    private final Long loginBlockedTime;
     private final LoadingCache<String, LoginAttempt> attemptsCache;
 
-    public LoginAttemptService(@Value("${aerocompare.app.login-locker-in-min}") Long loginLockerInMin) {
-        super();
-        attemptsCache = CacheBuilder.newBuilder().expireAfterWrite(loginLockerInMin, TimeUnit.MINUTES).build(new CacheLoader<>() {
-                    public LoginAttempt load(String key) {
-                        return new LoginAttempt();
-                    }
-                });
+    public LoginAttemptService(PropertiesConfig propertiesConfig) {
+        this.maxAttempt = propertiesConfig.getMAX_ATTEMPTS();
+        this.loginBlockedTime = propertiesConfig.getLOGIN_BLOCKED_TIME_MIN();
+        this.attemptsCache = CacheBuilder.newBuilder()
+                                     .expireAfterWrite(loginBlockedTime, TimeUnit.MINUTES)
+                                     .build(new CacheLoader<>() {
+                                         @Override
+                                         @NonNull
+                                         public LoginAttempt load(@NonNull String key) {
+                                             return new LoginAttempt();
+                                         }
+                                     });
     }
 
     public void loginSucceeded(String key) {
-        attemptsCache.invalidate(key);
-    }
-
-    public void unBlockUser(String key) {
         attemptsCache.invalidate(key);
     }
 
@@ -56,8 +51,8 @@ public class LoginAttemptService {
         attempts++;
         LoginAttempt loginAttempt = new LoginAttempt(duration, attempts);
 
-        if(attempts <= maxAttempt) {
-            loginAttempt.setDuration(Instant.now().plusSeconds(60 * loginLockerInMin));
+        if (attempts <= maxAttempt) {
+            loginAttempt.setDuration(Instant.now().plusSeconds(60 * loginBlockedTime));
             attemptsCache.put(key, loginAttempt);
         }
         return loginAttempt;
@@ -66,7 +61,12 @@ public class LoginAttemptService {
     public boolean isBlocked(String key) {
         try {
             attemptsCache.cleanUp();
-            return attemptsCache.get(key).getAttempt() >= maxAttempt;
+            if (isBlockedFor(key) > 0) {
+                return attemptsCache.get(key).getAttempt() >= maxAttempt;
+            } else {
+                attemptsCache.invalidate(key);
+            }
+            return false;
         } catch (ExecutionException e) {
             return false;
         }

@@ -1,27 +1,18 @@
 package jm.aerocompare.security;
 
+import jm.aerocompare.configuration.PropertiesConfig;
+import jm.aerocompare.exception.LoginAttemptException;
+import jm.aerocompare.security.payload.LoginAttempt;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.java.Log;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
 import org.springframework.security.authentication.event.AuthenticationFailureBadCredentialsEvent;
 import org.springframework.stereotype.Component;
-import jm.aerocompare.exception.LoginAttemptException;
-import jm.aerocompare.security.payload.LoginAttempt;
 
-import jakarta.servlet.http.HttpServletRequest;
-
-@Log
 @Component
 @RequiredArgsConstructor
 public class AuthenticationFailureListener implements ApplicationListener<AuthenticationFailureBadCredentialsEvent> {
-
-    private final HttpServletRequest request;
     private final LoginAttemptService loginAttemptService;
-
-    @Value("${aerocompare.app.max-attempts}")
-    Integer maxAttempt;
+    private final PropertiesConfig propertiesConfig;
 
     @Override
     public void onApplicationEvent(AuthenticationFailureBadCredentialsEvent e) {
@@ -29,7 +20,7 @@ public class AuthenticationFailureListener implements ApplicationListener<Authen
 
         LoginAttempt attempt = loginAttemptService.loginFailed(userEmail);
         throw new LoginAttemptException(
-                "Incorrect login details were provided! Attempts left: " + (maxAttempt + 1 - attempt.getAttempt())
+                "Incorrect login details were provided! Attempts left: " + (propertiesConfig.getMAX_ATTEMPTS() + 1 - attempt.getAttempt())
         );
     }
 }

@@ -1,5 +1,6 @@
 package jm.aerocompare.security.payload.request;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,6 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class AuthenticationRequest {
     @NotBlank
+    @Email
     String email;
 
     @NotBlank

@@ -25,7 +25,7 @@ export default function SplitButton({ setStops }) {
   const fetchStopsList = async () => {
     try {
       const [stopNumbersReponse] = await Promise.all([
-        getRequest("api/getAllStopNumbers"),
+        getRequest("api/stopNumbers"),
       ]);
 
       setStopsList(

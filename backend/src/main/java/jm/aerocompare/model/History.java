@@ -19,16 +19,12 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "favourites")
-public class Favourite {
+@Table(name = "history")
+public class History {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false)
     private UUID id;
-
-    @Type(value = ListArrayType.class) // Używa typu tablicy z Hibernate Types
-    @Column(name = "sorters_list", columnDefinition = "boolean[]") // Przechowuje jako tablicę boolean w PostgreSQL
-    private List<Boolean> sortersList;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "stop_number", columnDefinition = "estop_number") // Używa typu PostgreSQL

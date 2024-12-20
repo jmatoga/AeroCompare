@@ -20,7 +20,6 @@ import java.util.UUID;
 @Service
 @AllArgsConstructor
 public class UserServiceImpl implements UserService {
-    //    private final UserRoleValidator userRoleValidator;
     private UserRepository userRepository;
     private PasswordEncoder encoder;
 
@@ -72,8 +71,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ERole getRole(UUID userId) {
-        User user = getUserById(userId);
-        return user.getRole();
+        return getUserById(userId).getRole();
     }
-
 }

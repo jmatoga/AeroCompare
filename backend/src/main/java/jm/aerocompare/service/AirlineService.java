@@ -9,4 +9,8 @@ public interface AirlineService {
     List<AirlineDTO> getAllAirlines();
 
     AirlineDTO getAirlineByAirplaneId(UUID airplaneId);
+
+    void addNewAirlines(List<AirlineDTO> airlines);
+
+    void deleteAirlines(List<UUID> airlinesToDelete);
 }

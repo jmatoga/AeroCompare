@@ -7,7 +7,6 @@ import jm.aerocompare.model.EStopNumber;
 import jm.aerocompare.service.FlightService;
 import jm.aerocompare.service.UserService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,12 +24,11 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
-@Log4j2
 public class FlightController {
     private final UserService userService;
     private final FlightService flightService;
 
-    @GetMapping("/getAllFlights")
+    @GetMapping("/flights")
     @PreAuthorize("hasRole('ROLE_USER')" + "or hasRole('ROLE_MODERATOR')" + "or hasRole('ROLE_ADMIN')")
     public ResponseEntity<Page<FlightDTO>> getAllFlights(
             @RequestParam(defaultValue = "0") int page,

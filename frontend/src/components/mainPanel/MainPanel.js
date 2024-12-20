@@ -202,11 +202,11 @@ export default function MainPanel() {
     try {
       const [airportsResponse, airlinesResponse, classesResponse] =
         await Promise.all([
-          getRequest("api/getAllAirports"),
-          getRequest("api/getAllAirlines"),
-          getRequest("api/getAllClasses"),
+          getRequest("api/airports"),
+          getRequest("api/airlines"),
+          getRequest("api/classes"),
         ]);
-
+      console.log(airportsResponse.data);
       // Zaktualizowanie danych dla airportów
       setDepartureAirportData(airportsResponse.data);
       setArrivalAirportData(airportsResponse.data);
@@ -344,7 +344,7 @@ export default function MainPanel() {
 
     // Wysłanie zapytania
     const [flightsResponse] = await Promise.all([
-      getRequestWithParams("api/getAllFlights", { params }),
+      getRequestWithParams("api/flights", { params }),
     ]);
 
     // const flightsResponseMappedToRelationalFlights = response.data.content.map(
@@ -376,7 +376,7 @@ export default function MainPanel() {
 
     // Wysłanie zapytania
     const [favourititesResponse] = await Promise.all([
-      postRequestWithParams("api/addFavourite", { params }),
+      postRequestWithParams("api/favourites", { params }),
     ]);
   };
 

@@ -24,10 +24,10 @@ export default function NavBar({ isAdmin }) {
             <Nav.Link as={Link} to="/">
               Search
             </Nav.Link>
-            <Nav.Link as={Link} to="/features">
+            <Nav.Link as={Link} to="/favourites">
               Favourites
             </Nav.Link>
-            <Nav.Link as={Link} to="/pricing">
+            <Nav.Link as={Link} to="/history">
               History
             </Nav.Link>
             {isAdmin && (

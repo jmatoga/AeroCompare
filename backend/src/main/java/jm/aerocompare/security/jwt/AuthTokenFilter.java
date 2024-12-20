@@ -9,7 +9,7 @@ import jm.aerocompare.configuration.PropertiesConfig;
 import jm.aerocompare.exception.CurrentUserNotAuthenticatedException;
 import jm.aerocompare.security.service.UserDetailsServiceImpl;
 import lombok.NonNull;
-import lombok.extern.java.Log;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,19 +22,18 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-
-@Log
 @Component
+@Log4j2
 public class AuthTokenFilter extends OncePerRequestFilter {
+    private final PropertiesConfig propertiesConfig;
     private final JwtUtils jwtUtils;
     private final UserDetailsServiceImpl userDetailsService;
-    private final PropertiesConfig propertiesConfig;
     private final String[] allowedPaths;
 
-    public AuthTokenFilter(JwtUtils jwtUtils, UserDetailsServiceImpl userDetailsService, PropertiesConfig propertiesConfig, @Qualifier("allowedPaths") String[] allowedPaths) {
+    public AuthTokenFilter(PropertiesConfig propertiesConfig, JwtUtils jwtUtils, UserDetailsServiceImpl userDetailsService, @Qualifier("allowedPaths") String[] allowedPaths) {
+        this.propertiesConfig = propertiesConfig;
         this.jwtUtils = jwtUtils;
         this.userDetailsService = userDetailsService;
-        this.propertiesConfig = propertiesConfig;
         this.allowedPaths = allowedPaths;
     }
 
@@ -46,7 +45,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                if (propertiesConfig.getAccessTokenCookieName().equals(cookie.getName()))
+                if (propertiesConfig.getACCESS_TOKEN_COOKIE_NAME().equals(cookie.getName()))
                     return cookie.getValue();
             }
         }
@@ -55,7 +54,8 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
+                                    @NonNull FilterChain filterChain) throws ServletException, IOException {
         if (List.of(allowedPaths).contains(request.getRequestURI())) {
             filterChain.doFilter(request, response);
             return;
@@ -65,7 +65,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             String jwtAccessFromCookie = getJwtFromAccessCookieOrBearerToken(request);
 
             if (jwtAccessFromCookie != null && jwtUtils.validateJwtToken(jwtAccessFromCookie)) {
-                String email = jwtUtils.getUserNameFromJwtToken(jwtAccessFromCookie);
+                String email = jwtUtils.getUsernameFromJwtToken(jwtAccessFromCookie);
 
                 UserDetails userDetails = userDetailsService.loadUserByUsername(email);
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
@@ -75,7 +75,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         } catch (Exception e) {
-            log.info("Cannot set user authentication! Error:\n" + Arrays.toString(e.getStackTrace()));
+            log.info("Cannot set user authentication! Error:\n{}", Arrays.toString(e.getStackTrace()));
         }
         filterChain.doFilter(request, response);
     }

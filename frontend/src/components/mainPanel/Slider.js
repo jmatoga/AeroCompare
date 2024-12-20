@@ -38,7 +38,12 @@ export function HourSlider({
 
   return (
     <Box sx={{ width: 250 }} marginLeft={"20px"}>
-      <Typography id="non-linear-slider" gutterBottom textAlign="center">
+      <Typography
+        sx={{ width: 251 }}
+        id="non-linear-slider"
+        gutterBottom
+        textAlign="center"
+      >
         {`${label} `}
         {value[0] === 0 && value[1] === 24 ? (
           <b>all day</b>

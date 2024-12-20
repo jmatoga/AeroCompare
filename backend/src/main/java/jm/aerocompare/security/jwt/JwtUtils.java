@@ -1,12 +1,9 @@
 package jm.aerocompare.security.jwt;
 
-import com.nimbusds.jwt.JWT;
-import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.JWTParser;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jm.aerocompare.security.service.UserDetailsImpl;
-import lombok.extern.java.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,7 +14,6 @@ import java.text.ParseException;
 import java.util.Date;
 
 @Component
-@Log
 public class JwtUtils {
     private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
 
@@ -28,21 +24,21 @@ public class JwtUtils {
 
     public String generateJwtToken(UserDetailsImpl userPrincipal) {
         return Jwts.builder()
-                       .setSubject((userPrincipal.getUsername()))
+                       .setSubject(userPrincipal.getUsername())
                        .setIssuedAt(new Date())
                        .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
                        .signWith(key, SignatureAlgorithm.HS512)
                        .compact();
     }
 
-    public String generateTokenFromUsername(String username) {
-        return Jwts.builder().setSubject(username).setIssuedAt(new Date())
-                       .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
-                       .signWith(key, SignatureAlgorithm.HS512)
-                       .compact();
-    }
+//    public String generateTokenFromUsername(String username) {
+//        return Jwts.builder().setSubject(username).setIssuedAt(new Date())
+//                       .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
+//                       .signWith(key, SignatureAlgorithm.HS512)
+//                       .compact();
+//    }
 
-    public String getUserNameFromJwtToken(String token) {
+    public String getUsernameFromJwtToken(String token) {
         Claims claims = Jwts.parserBuilder()
                                 .setSigningKey(key)
                                 .build()
@@ -58,26 +54,22 @@ public class JwtUtils {
             return true;
         } catch (MalformedJwtException e) {
             logger.error("Invalid JWT token: {}", e.getMessage());
-            return false;
         } catch (ExpiredJwtException e) {
             logger.error("JWT token is expired: {}", e.getMessage());
-            return false;
         } catch (UnsupportedJwtException e) {
             logger.error("JWT token is unsupported: {}", e.getMessage());
-            return false;
         } catch (IllegalArgumentException e) {
             logger.error("JWT claims string is empty: {}", e.getMessage());
-            return false;
         } catch (ParseException e) {
             logger.error("Token failed to parse: {}", e.getMessage());
-            return false;
         }
+        return false;
     }
 
-    public String getEmailFromJwtResponse(String token) throws ParseException {
-        JWT jwt = JWTParser.parse(token);
-        JWTClaimsSet claimsSet = jwt.getJWTClaimsSet();
-        return claimsSet.getStringClaim("email");
-    }
+//    public String getEmailFromJwtResponse(String token) throws ParseException {
+//        JWT jwt = JWTParser.parse(token);
+//        JWTClaimsSet claimsSet = jwt.getJWTClaimsSet();
+//        return claimsSet.getStringClaim("email");
+//    }
 
 }

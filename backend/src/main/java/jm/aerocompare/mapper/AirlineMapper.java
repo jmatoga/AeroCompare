@@ -14,4 +14,10 @@ public abstract class AirlineMapper {
 
     @Named("mapToAirlineDTO")
     public abstract AirlineDTO mapToAirlineDTO(Airline airline);
+
+    @Named("mapToAirline")
+    public abstract Airline mapToAirlines(AirlineDTO airline);
+
+    @Named("mapToAirlines")
+    public abstract List<Airline> mapToAirlines(List<AirlineDTO> airlines);
 }
